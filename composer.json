@@ -1,0 +1,36 @@
+{
+    "name": "coduo/unit-of-work",
+    "description": "Generic unit of work",
+    "require": {
+        "symfony/property-access": "2.6.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.4.*",
+        "phpspec/phpspec": "2.1.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Coduo\\UnitOfWork": "src/",
+            "Coduo\\UnitOfWork\\Tests": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Norbert Orzechowicz",
+            "email": "norbert@orzechowicz.pl"
+        },
+        {
+            "name": "Dawid Sajdak",
+            "email": "sajdak.dawid@gmail.com"
+        }
+    ]
+}
