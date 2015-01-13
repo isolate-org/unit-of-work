@@ -19,4 +19,6 @@ class ObjectStates
      * modified after registration in unit of work.
      */
     const EDITED_OBJECT = 2;
+
+    const REMOVED_OBJECT = 3;
 }

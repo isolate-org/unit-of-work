@@ -47,6 +47,15 @@ class UnitOfWork
 
     /**
      * @param $object
+     * @return bool
+     */
+    public function isRegistered($object)
+    {
+        return array_key_exists(spl_object_hash($object), $this->states);
+    }
+
+    /**
+     * @param $object
      * @return int
      * @throws RuntimeException
      */
@@ -65,10 +74,18 @@ class UnitOfWork
 
     /**
      * @param $object
-     * @return bool
+     * @throws RuntimeException
      */
-    public function isRegistered($object)
+    public function remove($object)
     {
-        return array_key_exists(spl_object_hash($object), $this->states);
+        if (!$this->isRegistered($object)) {
+            if (!$this->objectVerifier->isPersisted($object)) {
+                throw new RuntimeException("Unit of Work can't remove not persisted objects.");
+            }
+
+            $this->register($object);
+        }
+
+        $this->states[spl_object_hash($object)] = ObjectStates::REMOVED_OBJECT;
     }
 }
