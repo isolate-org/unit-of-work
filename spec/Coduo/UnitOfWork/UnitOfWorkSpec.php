@@ -2,6 +2,9 @@
 
 namespace spec\Coduo\UnitOfWork;
 
+use Coduo\UnitOfWork\ClassDefinition;
+use Coduo\UnitOfWork\Command\NewCommand;
+use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\ObjectStates;
@@ -93,5 +96,20 @@ class UnitOfWorkSpec extends ObjectBehavior
         $object = new PersistedEntityStub();
         $this->remove($object);
         $this->getObjectState($object)->shouldReturn(ObjectStates::REMOVED_OBJECT);
+    }
+
+    function it_handle_new_command_when_there_is_object_that_should_be_persisted(
+        ObjectVerifier $objectVerifier,
+        ClassDefinition $classDefinition,
+        NewCommandHandler $commandHandler
+    ) {
+        $object = new NotPersistedEntityStub();
+        $objectVerifier->getDefinition($object)->willReturn($classDefinition);
+        $classDefinition->hasNewCommandHandler()->willReturn(true);
+        $classDefinition->getNewCommandHandler()->willReturn($commandHandler);
+        $commandHandler->handle(new NewCommand($object))->shouldBeCalled();
+
+        $this->register($object);
+        $this->commit();
     }
 }

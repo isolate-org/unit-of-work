@@ -2,6 +2,7 @@
 
 namespace Coduo\UnitOfWork;
 
+use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 
@@ -12,9 +13,15 @@ class UnitOfWork
      */
     private $objectVerifier;
 
+    /**
+     * @var array
+     */
     private $states;
 
-    private $origins;
+    /**
+     * @var array
+     */
+    private $objects;
 
     /**
      * @param ObjectVerifier $objectVerifier
@@ -23,7 +30,7 @@ class UnitOfWork
     {
         $this->objectVerifier = $objectVerifier;
         $this->states = [];
-        $this->origins = [];
+        $this->objects = [];
     }
 
     /**
@@ -39,7 +46,7 @@ class UnitOfWork
 
         $hash = spl_object_hash($object);
 
-        $this->origins[$hash] = clone($object);
+        $this->objects[$hash] = $object;
         $this->states[$hash] = $this->objectVerifier->isPersisted($object)
             ? ObjectStates::PERSISTED_OBJECT
             : ObjectStates::NEW_OBJECT;
@@ -65,7 +72,7 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (!$this->objectVerifier->isEqual($object, $this->origins[spl_object_hash($object)])) {
+        if (!$this->objectVerifier->isEqual($object, $this->objects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
 
@@ -87,5 +94,32 @@ class UnitOfWork
         }
 
         $this->states[spl_object_hash($object)] = ObjectStates::REMOVED_OBJECT;
+    }
+
+    public function commit()
+    {
+        foreach ($this->states as $objectHash => $objectState) {
+            $object = $this->objects[$objectHash];
+            $objectClassDefinition = $this->objectVerifier->getDefinition($object);
+
+            switch($objectState) {
+                case ObjectStates::NEW_OBJECT:
+                    $this->handleNewObject($objectClassDefinition, $object);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @param $objectClassDefinition
+     * @param $object
+     */
+    private function handleNewObject(ClassDefinition $objectClassDefinition, $object)
+    {
+        if ($objectClassDefinition->hasNewCommandHandler()) {
+            $objectClassDefinition->getNewCommandHandler()->handle(
+                new NewCommand($object)
+            );
+        }
     }
 }

@@ -8,4 +8,9 @@ class NotPersistedEntityStub
     {
         return null;
     }
+
+    public static function getClassName()
+    {
+        return __CLASS__;
+    }
 }
