@@ -11,6 +11,11 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 class ObjectVerifier
 {
     /**
+     * @var ChangeBuilder
+     */
+    private $changeBuilder;
+
+    /**
      * @var array|ClassDefinition[]
      */
     private $classDefinitions;
@@ -32,6 +37,8 @@ class ObjectVerifier
                 );
             }
         }
+
+        $this->changeBuilder = new ChangeBuilder();
         $this->classDefinitions = $classDefinitions;
     }
 
@@ -67,7 +74,36 @@ class ObjectVerifier
      */
     public function isEqual($firstObject, $secondObject)
     {
-        return $firstObject == $secondObject;
+        foreach ($this->getDefinition($firstObject)->getObservedPropertyPaths() as $propertyPath) {
+            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $propertyPath)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $firstObject
+     * @param $secondObject
+     * @return ChangeSet
+     * @throws InvalidPropertyPathException
+     * @throws RuntimeException
+     */
+    public function getChanges($firstObject, $secondObject)
+    {
+        if ($this->isEqual($firstObject, $secondObject)) {
+            throw new RuntimeException("Objects are equal.");
+        }
+
+        $changes = [];
+        foreach ($this->getDefinition($firstObject)->getObservedPropertyPaths() as $propertyPath) {
+            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $propertyPath)) {
+                $changes[] = $this->changeBuilder->buildChange($firstObject, $secondObject, $propertyPath);
+            }
+        }
+
+        return new ChangeSet($changes);
     }
 
     /**

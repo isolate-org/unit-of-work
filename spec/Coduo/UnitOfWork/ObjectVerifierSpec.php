@@ -8,6 +8,7 @@ use Coduo\UnitOfWork\Exception\InvalidPropertyPathException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\IdDefinition;
 use Coduo\UnitOfWork\Tests\Double\EditablePersistedEntityStub;
+use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use PhpSpec\ObjectBehavior;
@@ -43,7 +44,11 @@ class ObjectVerifierSpec extends ObjectBehavior
     function it_tells_that_object_is_persisted_when_it_has_not_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition("\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub", new IdDefinition("id"))
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
+                new IdDefinition("id"),
+                ["className"]
+            )
         ]);
 
         $entity = new PersistedEntityStub();
@@ -53,7 +58,11 @@ class ObjectVerifierSpec extends ObjectBehavior
     function it_tells_that_object_is_not_persisted_when_it_has_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition("\\Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub", new IdDefinition("id"))
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub",
+                new IdDefinition("id"),
+                ["className"]
+            )
         ]);
 
         $entity = new NotPersistedEntityStub();
@@ -63,7 +72,11 @@ class ObjectVerifierSpec extends ObjectBehavior
     function it_throws_exception_during_persist_check_when_property_path_is_not_valid()
     {
         $this->beConstructedWith([
-            new ClassDefinition("\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub", new IdDefinition("not_exists"))
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
+                new IdDefinition("not_exists"),
+                ["className"]
+            )
         ]);
 
         $entity = new PersistedEntityStub();
@@ -74,7 +87,15 @@ class ObjectVerifierSpec extends ObjectBehavior
 
     function it_compare_two_equal_objects()
     {
-        $firstObject = new EditablePersistedEntityStub();
+        $this->beConstructedWith([
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
+                new IdDefinition("id"),
+                ["firstName"]
+            )
+        ]);
+
+        $firstObject = new EntityFake(1);
         $secondObject = clone $firstObject;
 
         $this->isEqual($firstObject, $secondObject)->shouldReturn(true);
@@ -82,10 +103,36 @@ class ObjectVerifierSpec extends ObjectBehavior
 
     function it_compare_two_different_objects()
     {
-        $firstObject = new EditablePersistedEntityStub();
+        $this->beConstructedWith([
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
+                new IdDefinition("id"),
+                ["firstName"]
+            )
+        ]);
+
+        $firstObject = new EntityFake(1);
         $secondObject = clone $firstObject;
-        $secondObject->changeName("changed name");
+        $secondObject->changeFirstName("new first name");
 
         $this->isEqual($firstObject, $secondObject)->shouldReturn(false);
+    }
+
+    function it_get_changes_between_objects()
+    {
+        $this->beConstructedWith([
+            new ClassDefinition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
+                new IdDefinition("id"),
+                ["firstName"]
+            )
+        ]);
+
+        $firstObject = new EntityFake(1, "Norbert");
+        $secondObject = clone $firstObject;
+        $secondObject->changeFirstName("Michal");
+
+        $this->getChanges($firstObject, $secondObject)->count()->shouldReturn(1);
+        $this->getChanges($firstObject, $secondObject)->getChangeFor("firstName")->getOriginValue()->shouldReturn("Norbert");
     }
 }
