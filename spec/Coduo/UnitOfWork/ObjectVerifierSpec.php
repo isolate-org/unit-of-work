@@ -34,6 +34,12 @@ class ObjectVerifierSpec extends ObjectBehavior
             ->during("isPersisted", [new \DateTime()]);
     }
 
+    function it_throw_exception_on_attempt_of_getting_definition_for_non_defined_object_class()
+    {
+        $this->shouldThrow(new RuntimeException("Class \"DateTime\" does not have definition."))
+            ->during("getDefinition", [new \DateTime()]);
+    }
+
     function it_tells_that_object_is_persisted_when_it_has_not_empty_identity()
     {
         $this->beConstructedWith([

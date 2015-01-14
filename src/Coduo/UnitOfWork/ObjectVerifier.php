@@ -81,6 +81,23 @@ class ObjectVerifier
         }
     }
 
+
+    /**
+     * @param $object
+     * @return ClassDefinition
+     * @throws RuntimeException
+     */
+    public function getDefinition($object)
+    {
+        foreach ($this->classDefinitions as $definition) {
+            if ($definition->fitsFor($object)) {
+                return $definition;
+            }
+        }
+
+        throw new RuntimeException(sprintf("Class \"%s\" does not have definition.", get_class($object)));
+    }
+
     /**
      * @param $object
      * @return bool
@@ -94,18 +111,5 @@ class ObjectVerifier
         }
 
         return false;
-    }
-
-    /**
-     * @param $object
-     * @return ClassDefinition
-     */
-    private function getDefinition($object)
-    {
-        foreach ($this->classDefinitions as $definition) {
-            if ($definition->fitsFor($object)) {
-                return $definition;
-            }
-        }
     }
 }

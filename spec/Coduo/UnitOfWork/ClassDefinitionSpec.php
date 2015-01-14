@@ -2,6 +2,7 @@
 
 namespace spec\Coduo\UnitOfWork;
 
+use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\IdDefinition;
 use PhpSpec\ObjectBehavior;
@@ -38,5 +39,12 @@ class ClassDefinitionSpec extends ObjectBehavior
     {
         $this->beConstructedWith("\\DateTime", new IdDefinition("time"));
         $this->fitsFor(new \DateTime())->shouldReturn(true);
+    }
+
+    function it_can_have_new_command_handler(NewCommandHandler $commandHandler)
+    {
+        $this->beConstructedWith("\\DateTime", new IdDefinition("time"));
+        $this->addNewCommandHandler($commandHandler);
+        $this->hasNewCommandHandler()->shouldReturn(true);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Coduo\UnitOfWork;
 
+use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
 class ClassDefinition
@@ -15,6 +16,11 @@ class ClassDefinition
      * @var IdDefinition
      */
     private $idDefinition;
+
+    /**
+     * @var NewCommandHandler|null
+     */
+    private $newCommandHandler;
 
     /**
      * @param string $className
@@ -58,5 +64,29 @@ class ClassDefinition
     public function fitsFor($object)
     {
         return is_a($object, $this->className);
+    }
+
+    /**
+     * @param NewCommandHandler $commandHandler
+     */
+    public function addNewCommandHandler(NewCommandHandler $commandHandler)
+    {
+        $this->newCommandHandler = $commandHandler;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasNewCommandHandler()
+    {
+        return isset($this->newCommandHandler);
+    }
+
+    /**
+     * @return NewCommandHandler|null
+     */
+    public function getNewCommandHandler()
+    {
+        return $this->newCommandHandler;
     }
 }

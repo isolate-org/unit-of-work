@@ -8,4 +8,9 @@ class PersistedEntityStub
     {
         return 1;
     }
+
+    public static function getClassName()
+    {
+        return __CLASS__;
+    }
 }

@@ -4,6 +4,6 @@ This code is a result of pair codding session between [Norbert Orzechowicz](http
 Its not production ready, actually is not even working yet so don't think about using it ;)
 
 Our goal was to create simple but generic UnitOfWork that would allow developers to define how to behave when
-object is created, removed or deleted.
+object is created, modified or deleted.
 
 
