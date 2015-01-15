@@ -2,6 +2,7 @@
 
 namespace Coduo\UnitOfWork;
 
+use Coduo\UnitOfWork\Command\EditCommand;
 use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
@@ -23,6 +24,8 @@ class UnitOfWork
      */
     private $objects;
 
+    private $oroginObjects;
+
     /**
      * @param ObjectVerifier $objectVerifier
      */
@@ -31,6 +34,7 @@ class UnitOfWork
         $this->objectVerifier = $objectVerifier;
         $this->states = [];
         $this->objects = [];
+        $this->oroginObjects = [];
     }
 
     /**
@@ -47,6 +51,8 @@ class UnitOfWork
         $hash = spl_object_hash($object);
 
         $this->objects[$hash] = $object;
+        $this->oroginObjects[$hash] = clone($object);
+
         $this->states[$hash] = $this->objectVerifier->isPersisted($object)
             ? ObjectStates::PERSISTED_OBJECT
             : ObjectStates::NEW_OBJECT;
@@ -72,7 +78,7 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (!$this->objectVerifier->isEqual($object, $this->objects[spl_object_hash($object)])) {
+        if (!$this->objectVerifier->isEqual($object, $this->oroginObjects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
 
@@ -98,13 +104,16 @@ class UnitOfWork
 
     public function commit()
     {
-        foreach ($this->states as $objectHash => $objectState) {
-            $object = $this->objects[$objectHash];
+        foreach ($this->objects as $objectHash => $object) {
+            $originObject = $this->oroginObjects[$objectHash];
             $objectClassDefinition = $this->objectVerifier->getDefinition($object);
 
-            switch($objectState) {
+            switch($this->getObjectState($object)) {
                 case ObjectStates::NEW_OBJECT:
                     $this->handleNewObject($objectClassDefinition, $object);
+                    break;
+                case ObjectStates::EDITED_OBJECT:
+                    $this->handleEditedObject($objectClassDefinition, $object, $originObject);
                     break;
             }
         }
@@ -120,6 +129,23 @@ class UnitOfWork
             $objectClassDefinition->getNewCommandHandler()->handle(
                 new NewCommand($object)
             );
+        }
+    }
+
+    /**
+     * @param $objectClassDefinition
+     * @param $object
+     * @param $originObject
+     * @throws RuntimeException
+     */
+    private function handleEditedObject(ClassDefinition $objectClassDefinition, $object, $originObject)
+    {
+        if ($objectClassDefinition->hasEditCommandHandler()) {
+            $objectClassDefinition->getEditCommandHandler()
+                ->handle(new EditCommand($object, $this->objectVerifier->getChanges(
+                    $originObject,
+                    $object
+                )));
         }
     }
 }

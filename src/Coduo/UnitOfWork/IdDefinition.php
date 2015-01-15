@@ -4,7 +4,7 @@ namespace Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
-class IdDefinition
+final class IdDefinition
 {
     /**
      * @var string
@@ -31,5 +31,10 @@ class IdDefinition
     public function getPropertyPath()
     {
         return $this->propertyPath;
+    }
+
+    public function hasSame($propertyPath)
+    {
+        return $this->propertyPath === $propertyPath;
     }
 }

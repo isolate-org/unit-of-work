@@ -2,7 +2,7 @@
 
 namespace Coduo\UnitOfWork;
 
-class ObjectStates
+final class ObjectStates
 {
     /**
      * New created object that was never persisted and does not have identity
