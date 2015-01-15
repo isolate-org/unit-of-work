@@ -4,6 +4,7 @@ namespace Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Command\EditCommand;
 use Coduo\UnitOfWork\Command\NewCommand;
+use Coduo\UnitOfWork\Command\RemoveCommand;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 
@@ -115,6 +116,10 @@ class UnitOfWork
                 case ObjectStates::EDITED_OBJECT:
                     $this->handleEditedObject($objectClassDefinition, $object, $originObject);
                     break;
+                case ObjectStates::REMOVED_OBJECT:
+                    $this->handleRemovedObject($objectClassDefinition, $object);
+                    break;
+
             }
         }
     }
@@ -146,6 +151,18 @@ class UnitOfWork
                     $originObject,
                     $object
                 )));
+        }
+    }
+    /**
+     * @param $objectClassDefinition
+     * @param $object
+     * @throws RuntimeException
+     */
+    private function handleRemovedObject(ClassDefinition $objectClassDefinition, $object)
+    {
+        if ($objectClassDefinition->hasRemoveCommandHandler()) {
+            $objectClassDefinition->getRemoveCommandHandler()
+                ->handle(new RemoveCommand($object));
         }
     }
 }
