@@ -11,6 +11,7 @@ use Coduo\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
+use Coduo\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
 use Coduo\UnitOfWork\UnitOfWork;
 
 class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
@@ -65,6 +66,28 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             new ChangeSet([new Change("Norbert", "Michal", "firstName"), new Change("Orzechowicz", "Dabrowski", "lastName")]),
             $classDefinition->getEditCommandHandler()->getPersistedObjectChanges($object)
         );
+    }
+
+    function test_commit_of_removed_and_persisted_object()
+    {
+        $classDefinition = new ClassDefinition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addRemoveCommandHandler(new RemoveCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Dawid", "Sajdak");
+
+        $unitOfWork->register($object);
+        $unitOfWork->remove($object);
+        $unitOfWork->commit();
+
+        $this->assertTrue($classDefinition->getRemoveCommandHandler()->objectWasPersisted($object));
     }
 
     /**

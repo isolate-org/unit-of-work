@@ -4,6 +4,7 @@ namespace spec\Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Command\EditCommandHandler;
 use Coduo\UnitOfWork\Command\NewCommandHandler;
+use Coduo\UnitOfWork\Command\RemoveCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\IdDefinition;
 use PhpSpec\ObjectBehavior;
@@ -66,5 +67,12 @@ class ClassDefinitionSpec extends ObjectBehavior
         $this->beConstructedWith("\\DateTime", new IdDefinition("id"), ["time"]);
         $this->addEditCommandHandler($commandHandler);
         $this->hasEditCommandHandler()->shouldReturn(true);
+    }
+
+    function it_can_have_remove_command_handler(RemoveCommandHandler $commandHandler)
+    {
+        $this->beConstructedWith("\\DateTime", new IdDefinition("id"), ["time"]);
+        $this->addRemoveCommandHandler($commandHandler);
+        $this->hasRemoveCommandHandler()->shouldReturn(true);
     }
 }

@@ -4,6 +4,7 @@ namespace Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Command\EditCommandHandler;
 use Coduo\UnitOfWork\Command\NewCommandHandler;
+use Coduo\UnitOfWork\Command\RemoveCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
 class ClassDefinition
@@ -27,6 +28,11 @@ class ClassDefinition
      * @var EditCommandHandler|null
      */
     private $editCommandHandler;
+
+    /**
+     * @var RemoveCommandHandler|null
+     */
+    private $removeCommandHandler;
 
     /**
      * @var array
@@ -127,6 +133,30 @@ class ClassDefinition
     public function getEditCommandHandler()
     {
         return $this->editCommandHandler;
+    }
+
+    /**
+     * @param RemoveCommandHandler $commandHandler
+     */
+    public function addRemoveCommandHandler(RemoveCommandHandler $commandHandler)
+    {
+        $this->removeCommandHandler = $commandHandler;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRemoveCommandHandler()
+    {
+        return isset($this->removeCommandHandler);
+    }
+
+    /**
+     * @return RemoveCommandHandler|null
+     */
+    public function getRemoveCommandHandler()
+    {
+        return $this->removeCommandHandler;
     }
 
     /**
