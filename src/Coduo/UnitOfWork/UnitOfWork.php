@@ -25,7 +25,15 @@ class UnitOfWork
      */
     private $objects;
 
-    private $oroginObjects;
+    /**
+     * @var array
+     */
+    private $originObjects;
+
+    /**
+     * @var ObjectRecovery
+     */
+    private $objectRecovery;
 
     /**
      * @param ObjectVerifier $objectVerifier
@@ -35,7 +43,8 @@ class UnitOfWork
         $this->objectVerifier = $objectVerifier;
         $this->states = [];
         $this->objects = [];
-        $this->oroginObjects = [];
+        $this->originObjects = [];
+        $this->objectRecovery = new ObjectRecovery();
     }
 
     /**
@@ -52,7 +61,7 @@ class UnitOfWork
         $hash = spl_object_hash($object);
 
         $this->objects[$hash] = $object;
-        $this->oroginObjects[$hash] = clone($object);
+        $this->originObjects[$hash] = clone($object);
 
         $this->states[$hash] = $this->objectVerifier->isPersisted($object)
             ? ObjectStates::PERSISTED_OBJECT
@@ -79,7 +88,7 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (!$this->objectVerifier->isEqual($object, $this->oroginObjects[spl_object_hash($object)])) {
+        if (!$this->objectVerifier->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
 
@@ -106,7 +115,7 @@ class UnitOfWork
     public function commit()
     {
         foreach ($this->objects as $objectHash => $object) {
-            $originObject = $this->oroginObjects[$objectHash];
+            $originObject = $this->originObjects[$objectHash];
             $objectClassDefinition = $this->objectVerifier->getDefinition($object);
 
             switch($this->getObjectState($object)) {
@@ -121,6 +130,13 @@ class UnitOfWork
                     break;
 
             }
+        }
+    }
+
+    public function rollback()
+    {
+        foreach ($this->originObjects as $hash => $originObject) {
+            $this->objectRecovery->recover($this->objects[$hash], $originObject);
         }
     }
 

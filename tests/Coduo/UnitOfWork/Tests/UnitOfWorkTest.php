@@ -90,6 +90,30 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($classDefinition->getRemoveCommandHandler()->objectWasPersisted($object));
     }
 
+    function test_rollback_object_before_commit()
+    {
+        $classDefinition = new ClassDefinition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addRemoveCommandHandler(new RemoveCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Dawid", "Sajdak");
+        $unitOfWork->register($object);
+
+        $object->changeFirstName("Norbert");
+        $object->changeLastName("Orzechowicz");
+
+        $unitOfWork->rollback();
+
+        $this->assertSame("Dawid", $object->getFirstName());
+        $this->assertSame("Sajdak", $object->getLastName());
+    }
     /**
      * @param $classDefinitions
      * @return UnitOfWork
