@@ -69,7 +69,7 @@ class EntityFake
         return $this->firstName;
     }
 
-    public function getClassName()
+    public static function getClassName()
     {
         return __CLASS__;
     }
