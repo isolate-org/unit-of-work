@@ -114,6 +114,8 @@ class UnitOfWork
 
     public function commit()
     {
+        $removedObjectHashes = [];
+
         foreach ($this->objects as $objectHash => $object) {
             $originObject = $this->originObjects[$objectHash];
             $objectClassDefinition = $this->objectVerifier->getDefinition($object);
@@ -126,11 +128,18 @@ class UnitOfWork
                     $this->handleEditedObject($objectClassDefinition, $object, $originObject);
                     break;
                 case ObjectStates::REMOVED_OBJECT:
+                    $removedObjectHashes[] = $objectHash;
                     $this->handleRemovedObject($objectClassDefinition, $object);
                     break;
 
             }
         }
+
+        foreach ($removedObjectHashes as $hash) {
+            $this->unregisterObject($hash);
+        }
+
+        unset($removedObjectHashes);
     }
 
     public function rollback()
@@ -180,5 +189,15 @@ class UnitOfWork
             $objectClassDefinition->getRemoveCommandHandler()
                 ->handle(new RemoveCommand($object));
         }
+    }
+
+    /**
+     * @param $hash
+     */
+    private function unregisterObject($hash)
+    {
+        unset($this->states[$hash]);
+        unset($this->objects[$hash]);
+        unset($this->originObjects[$hash]);
     }
 }

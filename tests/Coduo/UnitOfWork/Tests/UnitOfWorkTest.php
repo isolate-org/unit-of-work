@@ -88,6 +88,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $unitOfWork->commit();
 
         $this->assertTrue($classDefinition->getRemoveCommandHandler()->objectWasPersisted($object));
+        $this->assertFalse($unitOfWork->isRegistered($object));
     }
 
     function test_rollback_object_before_commit()
@@ -114,7 +115,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("Dawid", $object->getFirstName());
         $this->assertSame("Sajdak", $object->getLastName());
     }
-    
+
     /**
      * @param $classDefinitions
      * @return UnitOfWork
