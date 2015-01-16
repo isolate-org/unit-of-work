@@ -9,6 +9,7 @@ use Coduo\UnitOfWork\IdDefinition;
 use Coduo\UnitOfWork\ObjectVerifier;
 use Coduo\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
+use Coduo\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
 use Coduo\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
@@ -115,6 +116,32 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("Dawid", $object->getFirstName());
         $this->assertSame("Sajdak", $object->getLastName());
     }
+
+    function test_rollback_when_command_handler_return_false()
+    {
+        $classDefinition = new ClassDefinition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addEditCommandHandler(new FailingCommandHandlerStub());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Dawid", "Sajdak");
+        $unitOfWork->register($object);
+
+        $object->changeFirstName("Norbert");
+        $object->changeLastName("Orzechowicz");
+
+        $unitOfWork->commit();
+
+        $this->assertSame("Dawid", $object->getFirstName());
+        $this->assertSame("Sajdak", $object->getLastName());
+    }
+
 
     /**
      * @param $classDefinitions
