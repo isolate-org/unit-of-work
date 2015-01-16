@@ -2,9 +2,8 @@
 
 namespace spec\Coduo\UnitOfWork;
 
-use Coduo\UnitOfWork\Change;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
-use Coduo\UnitOfWork\Exception\InvalidPropertyPathException;
+use Coduo\UnitOfWork\Exception\NotExistingPropertyException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
@@ -44,15 +43,15 @@ class ChangeBuilderSpec extends ObjectBehavior
 
     }
 
-    function it_throws_exception_when_property_path_does_not_exists()
+    function it_throws_exception_when_property_does_not_exists()
     {
         $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
 
-        $this->shouldThrow(new InvalidPropertyPathException("Property path \"title\" does not exists in \"Coduo\\UnitOfWork\\Tests\\Double\\EntityFake\" class."))
+        $this->shouldThrow(new NotExistingPropertyException("Property \"title\" does not exists in \"Coduo\\UnitOfWork\\Tests\\Double\\EntityFake\" class."))
             ->during("isDifferent", [$firstObject, $secondObject, "title"]);
     }
 
-    function it_throws_exception_when_property_path_values_are_identical_in_both_objects()
+    function it_throws_exception_when_property_values_are_identical_in_both_objects()
     {
         $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
 

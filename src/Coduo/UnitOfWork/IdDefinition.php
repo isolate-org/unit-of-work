@@ -33,7 +33,7 @@ final class IdDefinition
         return $this->propertyPath;
     }
 
-    public function hasSame($propertyPath)
+    public function itFits($propertyPath)
     {
         return $this->propertyPath === $propertyPath;
     }

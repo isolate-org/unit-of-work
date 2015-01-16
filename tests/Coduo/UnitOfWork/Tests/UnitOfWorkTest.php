@@ -21,7 +21,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $classDefinition = new ClassDefinition(
             NotPersistedEntityStub::getClassName(),
             new IdDefinition("id"),
-            ["className"]
+            ["name"]
         );
 
         $classDefinition->addNewCommandHandler(new NewCommandHandlerMock());
@@ -114,6 +114,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("Dawid", $object->getFirstName());
         $this->assertSame("Sajdak", $object->getLastName());
     }
+    
     /**
      * @param $classDefinitions
      * @return UnitOfWork

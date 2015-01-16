@@ -47,7 +47,7 @@ class ObjectVerifierSpec extends ObjectBehavior
             new ClassDefinition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
                 new IdDefinition("id"),
-                ["className"]
+                []
             )
         ]);
 
@@ -61,7 +61,7 @@ class ObjectVerifierSpec extends ObjectBehavior
             new ClassDefinition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub",
                 new IdDefinition("id"),
-                ["className"]
+                []
             )
         ]);
 
@@ -69,13 +69,13 @@ class ObjectVerifierSpec extends ObjectBehavior
         $this->isPersisted($entity)->shouldReturn(false);
     }
 
-    function it_throws_exception_during_persist_check_when_property_path_is_not_valid()
+    function it_throws_exception_during_persist_check_when_property_does_not_exists()
     {
         $this->beConstructedWith([
             new ClassDefinition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
                 new IdDefinition("not_exists"),
-                ["className"]
+                []
             )
         ]);
 

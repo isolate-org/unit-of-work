@@ -6,6 +6,7 @@ use Coduo\UnitOfWork\Command\EditCommandHandler;
 use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Command\RemoveCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
+use Coduo\UnitOfWork\Exception\NotExistingPropertyException;
 
 class ClassDefinition
 {
@@ -37,15 +38,15 @@ class ClassDefinition
     /**
      * @var array
      */
-    private $observedPropertyPaths;
+    private $observedProperties;
 
     /**
      * @param string $className
      * @param IdDefinition $idDefinition
-     * @param $observedPropertyPaths
+     * @param $observedProperties
      * @throws InvalidArgumentException
      */
-    public function __construct($className, IdDefinition $idDefinition, array $observedPropertyPaths)
+    public function __construct($className, IdDefinition $idDefinition, array $observedProperties)
     {
         if (!is_string($className)) {
             throw new InvalidArgumentException("Class name must be a valid string.");
@@ -55,11 +56,11 @@ class ClassDefinition
             throw new InvalidArgumentException(sprintf("Class \"%s\" does not exists.", $className));
         }
 
-        $this->validatePropertyPaths($idDefinition, $observedPropertyPaths);
+        $this->validatePropertyPaths($className, $idDefinition, $observedProperties);
 
         $this->className = $className;
         $this->idDefinition = $idDefinition;
-        $this->observedPropertyPaths = $observedPropertyPaths;
+        $this->observedProperties = $observedProperties;
     }
 
     /**
@@ -162,25 +163,32 @@ class ClassDefinition
     /**
      * @return array
      */
-    public function getObservedPropertyPaths()
+    public function getObservedProperties()
     {
-        return $this->observedPropertyPaths;
+        return $this->observedProperties;
     }
 
     /**
+     * @param $className
      * @param IdDefinition $idDefinition
-     * @param array $observedPropertyPaths
+     * @param array $observedProperties
      * @throws InvalidArgumentException
+     * @throws NotExistingPropertyException
      */
-    private function validatePropertyPaths(IdDefinition $idDefinition, array $observedPropertyPaths)
+    private function validatePropertyPaths($className, IdDefinition $idDefinition, array $observedProperties)
     {
-        if (!count($observedPropertyPaths)) {
-            throw new InvalidArgumentException("You need to observe at least one property.");
-        }
+        $reflection = new \ReflectionClass($className);
+        foreach ($observedProperties as $propertyName) {
+            if ($idDefinition->itFits($propertyName)) {
+                throw new InvalidArgumentException("Id definition property path can't be between observer properties.");
+            }
 
-        foreach ($observedPropertyPaths as $propertyPath) {
-            if ($idDefinition->hasSame($propertyPath)) {
-                throw new InvalidArgumentException("Id definition property path can't be between observer property paths.");
+            if (!$reflection->hasProperty($propertyName)) {
+                throw new NotExistingPropertyException(sprintf(
+                    "Property \"%s\" does not exists in \"%s\" class.",
+                    $propertyName,
+                    $className
+                ));
             }
         }
     }

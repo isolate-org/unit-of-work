@@ -7,14 +7,14 @@ use Coduo\UnitOfWork\Exception\RuntimeException;
 class ChangeSet extends \ArrayObject
 {
     /**
-     * @param $propertyPath
+     * @param $propertyName
      * @return bool
      */
-    public function hasChangeFor($propertyPath)
+    public function hasChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
             /* @var Change $change */
-            if ($change->hasSame($propertyPath)) {
+            if ($change->isFor($propertyName)) {
                 return true;
             }
         }
@@ -23,20 +23,20 @@ class ChangeSet extends \ArrayObject
     }
 
     /**
-     * @param $propertyPath
+     * @param $propertyName
      * @return bool
      * @throws RuntimeException
      */
-    public function getChangeFor($propertyPath)
+    public function getChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
             /* @var Change $change */
-            if ($change->hasSame($propertyPath)) {
+            if ($change->isFor($propertyName)) {
                 return $change;
             }
         }
 
-        throw new RuntimeException(sprintf("There are not changes for \"%s\" property path.", $propertyPath));
+        throw new RuntimeException(sprintf("There are not changes for \"%s\" property.", $propertyName));
     }
 
     /**

@@ -3,36 +3,44 @@
 namespace Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
-use Coduo\UnitOfWork\Exception\InvalidPropertyPathException;
+use Coduo\UnitOfWork\Exception\NotExistingPropertyException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
-use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 final class ChangeBuilder
 {
     /**
-     * @var PropertyAccessor
+     * @param $firstObject
+     * @param $secondObject
+     * @param string $propertyName
+     * @return bool
+     * @throws NotExistingPropertyException
      */
-    private $propertyAccessor;
-
-    public function __construct()
-    {
-        $this->propertyAccessor = new PropertyAccessor(false, true);
-    }
-
-    public function isDifferent($firstObject, $secondObject, $propertyPath)
+    public function isDifferent($firstObject, $secondObject, $propertyName)
     {
         $this->validaObjects($firstObject, $secondObject);
 
-        try {
-            $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyPath);
-            $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyPath);
-        } catch (NoSuchPropertyException $exception) {
-            throw new InvalidPropertyPathException(sprintf(
-                "Property path \"%s\" does not exists in \"%s\" class.",
-                $propertyPath,
+        $reflection = new \ReflectionClass($firstObject);
+        if (!$reflection->hasProperty($propertyName)) {
+            throw new NotExistingPropertyException(sprintf(
+                "Property \"%s\" does not exists in \"%s\" class.",
+                $propertyName,
                 get_class($firstObject)
             ));
+        }
+
+        $property = $reflection->getProperty($propertyName);
+
+        $setNotAccessible = false;
+        if (!$property->isPublic()) {
+            $setNotAccessible = true;
+            $property->setAccessible(true);
+        }
+
+        $firstValue = $property->getValue($firstObject);
+        $secondValue = $property->getValue($secondObject);
+
+        if ($setNotAccessible) {
+            $property->setAccessible(false);
         }
 
         return $firstValue !== $secondValue;
@@ -41,21 +49,34 @@ final class ChangeBuilder
     /**
      * @param $firstObject
      * @param $secondObject
-     * @param $propertyPath
+     * @param $propertyName
      * @return Change
-     * @throws InvalidPropertyPathException
      * @throws RuntimeException
      */
-    public function buildChange($firstObject, $secondObject, $propertyPath)
+    public function buildChange($firstObject, $secondObject, $propertyName)
     {
-        if (!$this->isDifferent($firstObject, $secondObject, $propertyPath)) {
+        if (!$this->isDifferent($firstObject, $secondObject, $propertyName)) {
             throw new RuntimeException("There are no differences between objects properties.");
         }
 
-        $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyPath);
-        $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyPath);
+        $reflection = new \ReflectionClass($firstObject);
+        $property = $reflection->getProperty($propertyName);
 
-        return new Change($firstValue, $secondValue, $propertyPath);
+        $setNotAccessible = false;
+        if (!$property->isPublic()) {
+            $setNotAccessible = true;
+            $property->setAccessible(true);
+        }
+
+        $firstValue = $property->getValue($firstObject);
+        $secondValue = $property->getValue($secondObject);
+
+
+        if ($setNotAccessible) {
+            $property->setAccessible(false);
+        }
+
+        return new Change($firstValue, $secondValue, $propertyName);
     }
 
     /**

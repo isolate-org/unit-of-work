@@ -14,7 +14,7 @@ class ChangeSetSpec extends ObjectBehavior
         $this->shouldBeAnInstanceOf('ArrayObject');
     }
 
-    function it_has_information_about_changes_for_specific_property_path()
+    function it_has_information_about_changes_for_specific_property_name()
     {
         $change = new Change("Michal", "Norbert", "firstName");
         $this->beConstructedWith([$change]);
@@ -23,11 +23,11 @@ class ChangeSetSpec extends ObjectBehavior
         $this->getChangeFor("firstName")->shouldReturn($change);
     }
 
-    function it_throws_exception_when_there_are_no_changes_for_property_path()
+    function it_throws_exception_when_there_are_no_changes_for_property()
     {
         $this->beConstructedWith([]);
 
-        $this->shouldThrow(new RuntimeException("There are not changes for \"firstName\" property path."))
+        $this->shouldThrow(new RuntimeException("There are not changes for \"firstName\" property."))
             ->during('getChangeFor', ["firstName"]);
     }
 }
