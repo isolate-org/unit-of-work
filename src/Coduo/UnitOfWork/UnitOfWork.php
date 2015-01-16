@@ -140,9 +140,8 @@ class UnitOfWork
             }
         }
 
-        foreach ($removedObjectHashes as $hash) {
-            $this->unregisterObject($hash);
-        }
+        $this->unregisterObjects($removedObjectHashes);
+        $this->updateObjectsAndStates();
 
         unset($removedObjectHashes);
     }
@@ -197,12 +196,22 @@ class UnitOfWork
     }
 
     /**
-     * @param $hash
+     * @param $removedObjectHashes
      */
-    private function unregisterObject($hash)
+    private function unregisterObjects($removedObjectHashes)
     {
-        unset($this->states[$hash]);
-        unset($this->objects[$hash]);
-        unset($this->originObjects[$hash]);
+        foreach ($removedObjectHashes as $hash) {
+            unset($this->states[$hash]);
+            unset($this->objects[$hash]);
+            unset($this->originObjects[$hash]);
+        }
+    }
+
+    private function updateObjectsAndStates()
+    {
+        foreach ($this->objects as $objectHash => $object) {
+            $this->originObjects[$objectHash] = $object;
+            $this->states[$objectHash] = ObjectStates::PERSISTED_OBJECT;
+        }
     }
 }
