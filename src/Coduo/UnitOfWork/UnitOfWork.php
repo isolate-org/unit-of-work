@@ -114,23 +114,36 @@ class UnitOfWork
 
     public function commit()
     {
+        $removedObjectHashes = [];
+
         foreach ($this->objects as $objectHash => $object) {
             $originObject = $this->originObjects[$objectHash];
             $objectClassDefinition = $this->objectVerifier->getDefinition($object);
 
+            $commandResult = null;
             switch($this->getObjectState($object)) {
                 case ObjectStates::NEW_OBJECT:
-                    $this->handleNewObject($objectClassDefinition, $object);
+                    $commandResult = $this->handleNewObject($objectClassDefinition, $object);
                     break;
                 case ObjectStates::EDITED_OBJECT:
-                    $this->handleEditedObject($objectClassDefinition, $object, $originObject);
+                    $commandResult = $this->handleEditedObject($objectClassDefinition, $object, $originObject);
                     break;
                 case ObjectStates::REMOVED_OBJECT:
-                    $this->handleRemovedObject($objectClassDefinition, $object);
+                    $removedObjectHashes[] = $objectHash;
+                    $commandResult = $this->handleRemovedObject($objectClassDefinition, $object);
                     break;
+            }
 
+            if ($commandResult === false) {
+                $this->rollback();
+                return ;
             }
         }
+
+        $this->unregisterObjects($removedObjectHashes);
+        $this->updateObjectsAndStates();
+
+        unset($removedObjectHashes);
     }
 
     public function rollback()
@@ -147,7 +160,7 @@ class UnitOfWork
     private function handleNewObject(ClassDefinition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasNewCommandHandler()) {
-            $objectClassDefinition->getNewCommandHandler()->handle(
+            return $objectClassDefinition->getNewCommandHandler()->handle(
                 new NewCommand($object)
             );
         }
@@ -162,7 +175,7 @@ class UnitOfWork
     private function handleEditedObject(ClassDefinition $objectClassDefinition, $object, $originObject)
     {
         if ($objectClassDefinition->hasEditCommandHandler()) {
-            $objectClassDefinition->getEditCommandHandler()
+            return $objectClassDefinition->getEditCommandHandler()
                 ->handle(new EditCommand($object, $this->objectVerifier->getChanges(
                     $originObject,
                     $object
@@ -177,8 +190,28 @@ class UnitOfWork
     private function handleRemovedObject(ClassDefinition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasRemoveCommandHandler()) {
-            $objectClassDefinition->getRemoveCommandHandler()
+            return $objectClassDefinition->getRemoveCommandHandler()
                 ->handle(new RemoveCommand($object));
+        }
+    }
+
+    /**
+     * @param $removedObjectHashes
+     */
+    private function unregisterObjects($removedObjectHashes)
+    {
+        foreach ($removedObjectHashes as $hash) {
+            unset($this->states[$hash]);
+            unset($this->objects[$hash]);
+            unset($this->originObjects[$hash]);
+        }
+    }
+
+    private function updateObjectsAndStates()
+    {
+        foreach ($this->objects as $objectHash => $object) {
+            $this->originObjects[$objectHash] = $object;
+            $this->states[$objectHash] = ObjectStates::PERSISTED_OBJECT;
         }
     }
 }

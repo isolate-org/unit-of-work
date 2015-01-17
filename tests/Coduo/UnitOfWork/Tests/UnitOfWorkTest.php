@@ -6,9 +6,11 @@ use Coduo\UnitOfWork\Change;
 use Coduo\UnitOfWork\ChangeSet;
 use Coduo\UnitOfWork\ClassDefinition;
 use Coduo\UnitOfWork\IdDefinition;
+use Coduo\UnitOfWork\ObjectStates;
 use Coduo\UnitOfWork\ObjectVerifier;
 use Coduo\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
+use Coduo\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
 use Coduo\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
@@ -21,7 +23,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $classDefinition = new ClassDefinition(
             NotPersistedEntityStub::getClassName(),
             new IdDefinition("id"),
-            ["className"]
+            ["name"]
         );
 
         $classDefinition->addNewCommandHandler(new NewCommandHandlerMock());
@@ -88,6 +90,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $unitOfWork->commit();
 
         $this->assertTrue($classDefinition->getRemoveCommandHandler()->objectWasPersisted($object));
+        $this->assertFalse($unitOfWork->isRegistered($object));
     }
 
     function test_rollback_object_before_commit()
@@ -114,6 +117,61 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("Dawid", $object->getFirstName());
         $this->assertSame("Sajdak", $object->getLastName());
     }
+
+    function test_rollback_when_command_handler_return_false()
+    {
+        $classDefinition = new ClassDefinition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addEditCommandHandler(new FailingCommandHandlerStub());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Dawid", "Sajdak");
+        $unitOfWork->register($object);
+
+        $object->changeFirstName("Norbert");
+        $object->changeLastName("Orzechowicz");
+
+        $unitOfWork->commit();
+
+        $this->assertSame("Dawid", $object->getFirstName());
+        $this->assertSame("Sajdak", $object->getLastName());
+    }
+
+    function test_that_rollback_after_successful_commit_have_no_affect_for_objects()
+    {
+        $classDefinition = new ClassDefinition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Dawid", "Sajdak");
+        $unitOfWork->register($object);
+
+        $object->changeFirstName("Norbert");
+        $object->changeLastName("Orzechowicz");
+
+        $this->assertSame(ObjectStates::EDITED_OBJECT, $unitOfWork->getObjectState($object));
+
+        $unitOfWork->commit();
+        $unitOfWork->rollback();
+
+        $this->assertSame("Norbert", $object->getFirstName());
+        $this->assertSame("Orzechowicz", $object->getLastName());
+        $this->assertSame(ObjectStates::PERSISTED_OBJECT, $unitOfWork->getObjectState($object));
+    }
+
     /**
      * @param $classDefinitions
      * @return UnitOfWork

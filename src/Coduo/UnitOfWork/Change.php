@@ -6,18 +6,18 @@ final class Change
 {
     private $originValue;
     private $newValue;
-    private $propertyPath;
+    private $propertyName;
 
     /**
      * @param $originValue
      * @param $newValue
-     * @param $propertyPath
+     * @param $propertyName
      */
-    public function __construct($originValue, $newValue, $propertyPath)
+    public function __construct($originValue, $newValue, $propertyName)
     {
         $this->originValue = $originValue;
         $this->newValue = $newValue;
-        $this->propertyPath = $propertyPath;
+        $this->propertyName = $propertyName;
     }
 
     /**
@@ -39,13 +39,13 @@ final class Change
     /**
      * @return mixed
      */
-    public function getPropertyPath()
+    public function getPropertyName()
     {
-        return $this->propertyPath;
+        return $this->propertyName;
     }
 
-    public function hasSame($propertyPath)
+    public function isFor($propertyName)
     {
-        return $this->propertyPath === $propertyPath;
+        return $this->propertyName === $propertyName;
     }
 }

@@ -74,8 +74,8 @@ class ObjectVerifier
      */
     public function isEqual($firstObject, $secondObject)
     {
-        foreach ($this->getDefinition($firstObject)->getObservedPropertyPaths() as $propertyPath) {
-            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $propertyPath)) {
+        foreach ($this->getDefinition($firstObject)->getObservedProperties() as $property) {
+            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $property)) {
                 return false;
             }
         }
@@ -97,9 +97,9 @@ class ObjectVerifier
         }
 
         $changes = [];
-        foreach ($this->getDefinition($firstObject)->getObservedPropertyPaths() as $propertyPath) {
-            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $propertyPath)) {
-                $changes[] = $this->changeBuilder->buildChange($firstObject, $secondObject, $propertyPath);
+        foreach ($this->getDefinition($firstObject)->getObservedProperties() as $property) {
+            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $property)) {
+                $changes[] = $this->changeBuilder->buildChange($firstObject, $secondObject, $property);
             }
         }
 
