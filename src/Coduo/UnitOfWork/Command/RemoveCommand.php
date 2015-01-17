@@ -4,7 +4,7 @@ namespace Coduo\UnitOfWork\Command;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
-class RemoveCommand
+final class RemoveCommand
 {
     private $object;
 
