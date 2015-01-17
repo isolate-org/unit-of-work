@@ -8,7 +8,7 @@ use Coduo\UnitOfWork\Exception\RuntimeException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
-class ObjectVerifier
+class ObjectInformationPoint
 {
     /**
      * @var ChangeBuilder

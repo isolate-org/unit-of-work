@@ -7,7 +7,7 @@ use Coduo\UnitOfWork\ChangeSet;
 use Coduo\UnitOfWork\ClassDefinition;
 use Coduo\UnitOfWork\IdDefinition;
 use Coduo\UnitOfWork\ObjectStates;
-use Coduo\UnitOfWork\ObjectVerifier;
+use Coduo\UnitOfWork\ObjectInformationPoint;
 use Coduo\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
@@ -178,6 +178,6 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork(array $classDefinitions = [])
     {
-        return new UnitOfWork(new ObjectVerifier($classDefinitions));
+        return new UnitOfWork(new ObjectInformationPoint($classDefinitions));
     }
 }

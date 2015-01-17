@@ -14,7 +14,7 @@ use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class ObjectVerifierSpec extends ObjectBehavior
+class ObjectInformationPointSpec extends ObjectBehavior
 {
     function it_throws_exception_when_constructed_with_non_traversable_class_definition_collection()
     {

@@ -11,9 +11,9 @@ use Coduo\UnitOfWork\Exception\RuntimeException;
 class UnitOfWork
 {
     /**
-     * @var ObjectVerifier
+     * @var ObjectInformationPoint
      */
-    private $objectVerifier;
+    private $objectInformationPoint;
 
     /**
      * @var array
@@ -36,11 +36,11 @@ class UnitOfWork
     private $objectRecovery;
 
     /**
-     * @param ObjectVerifier $objectVerifier
+     * @param ObjectInformationPoint $objectInformationPoint
      */
-    public function __construct(ObjectVerifier $objectVerifier)
+    public function __construct(ObjectInformationPoint $objectInformationPoint)
     {
-        $this->objectVerifier = $objectVerifier;
+        $this->objectInformationPoint = $objectInformationPoint;
         $this->states = [];
         $this->objects = [];
         $this->originObjects = [];
@@ -63,7 +63,7 @@ class UnitOfWork
         $this->objects[$hash] = $object;
         $this->originObjects[$hash] = clone($object);
 
-        $this->states[$hash] = $this->objectVerifier->isPersisted($object)
+        $this->states[$hash] = $this->objectInformationPoint->isPersisted($object)
             ? ObjectStates::PERSISTED_OBJECT
             : ObjectStates::NEW_OBJECT;
     }
@@ -88,7 +88,7 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (!$this->objectVerifier->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
+        if (!$this->objectInformationPoint->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
 
@@ -102,7 +102,7 @@ class UnitOfWork
     public function remove($object)
     {
         if (!$this->isRegistered($object)) {
-            if (!$this->objectVerifier->isPersisted($object)) {
+            if (!$this->objectInformationPoint->isPersisted($object)) {
                 throw new RuntimeException("Unit of Work can't remove not persisted objects.");
             }
 
@@ -118,7 +118,7 @@ class UnitOfWork
 
         foreach ($this->objects as $objectHash => $object) {
             $originObject = $this->originObjects[$objectHash];
-            $objectClassDefinition = $this->objectVerifier->getDefinition($object);
+            $objectClassDefinition = $this->objectInformationPoint->getDefinition($object);
 
             $commandResult = null;
             switch($this->getObjectState($object)) {
@@ -176,7 +176,7 @@ class UnitOfWork
     {
         if ($objectClassDefinition->hasEditCommandHandler()) {
             return $objectClassDefinition->getEditCommandHandler()
-                ->handle(new EditCommand($object, $this->objectVerifier->getChanges(
+                ->handle(new EditCommand($object, $this->objectInformationPoint->getChanges(
                     $originObject,
                     $object
                 )));
