@@ -5,9 +5,17 @@ namespace Coduo\UnitOfWork;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\NotExistingPropertyException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
+use Coduo\UnitOfWork\Object\PropertyAccessor;
 
 final class ChangeBuilder
 {
+    private $propertyAccessor;
+
+    public function __construct()
+    {
+        $this->propertyAccessor = new PropertyAccessor();
+    }
+
     /**
      * @param $firstObject
      * @param $secondObject
@@ -19,29 +27,8 @@ final class ChangeBuilder
     {
         $this->validaObjects($firstObject, $secondObject);
 
-        $reflection = new \ReflectionClass($firstObject);
-        if (!$reflection->hasProperty($propertyName)) {
-            throw new NotExistingPropertyException(sprintf(
-                "Property \"%s\" does not exists in \"%s\" class.",
-                $propertyName,
-                get_class($firstObject)
-            ));
-        }
-
-        $property = $reflection->getProperty($propertyName);
-
-        $setNotAccessible = false;
-        if (!$property->isPublic()) {
-            $setNotAccessible = true;
-            $property->setAccessible(true);
-        }
-
-        $firstValue = $property->getValue($firstObject);
-        $secondValue = $property->getValue($secondObject);
-
-        if ($setNotAccessible) {
-            $property->setAccessible(false);
-        }
+        $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyName);
+        $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyName);
 
         return $firstValue !== $secondValue;
     }
@@ -59,22 +46,8 @@ final class ChangeBuilder
             throw new RuntimeException("There are no differences between objects properties.");
         }
 
-        $reflection = new \ReflectionClass($firstObject);
-        $property = $reflection->getProperty($propertyName);
-
-        $setNotAccessible = false;
-        if (!$property->isPublic()) {
-            $setNotAccessible = true;
-            $property->setAccessible(true);
-        }
-
-        $firstValue = $property->getValue($firstObject);
-        $secondValue = $property->getValue($secondObject);
-
-
-        if ($setNotAccessible) {
-            $property->setAccessible(false);
-        }
+        $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyName);
+        $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyName);
 
         return new Change($firstValue, $secondValue, $propertyName);
     }

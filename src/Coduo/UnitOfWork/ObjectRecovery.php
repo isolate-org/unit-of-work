@@ -3,7 +3,7 @@
 namespace Coduo\UnitOfWork;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Coduo\UnitOfWork\Object\PropertyAccessor;
 
 class ObjectRecovery
 {
@@ -14,26 +14,25 @@ class ObjectRecovery
 
     public function __construct()
     {
-        $this->propertyAccessor = new PropertyAccessor(false, true);
+        $this->propertyAccessor = new PropertyAccessor();
     }
 
+    /**
+     * @param $object
+     * @param $sourceObject
+     */
     public function recover($object, $sourceObject)
     {
         $this->validaObjects($object, $sourceObject);
 
         $reflection = new \ReflectionClass($object);
         foreach ($reflection->getProperties() as $property) {
-            $setNotAccessible = false;
-            if (!$property->isPublic()) {
-                $setNotAccessible = true;
-                $property->setAccessible(true);
-            }
 
-            $property->setValue($object, $property->getValue($sourceObject));
-
-            if ($setNotAccessible) {
-                $property->setAccessible(false);
-            }
+            $this->propertyAccessor->setValue(
+                $object,
+                $property->getName(),
+                $this->propertyAccessor->getValue($sourceObject, $property->getName())
+            );
         }
     }
 
