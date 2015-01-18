@@ -4,7 +4,7 @@ namespace Coduo\UnitOfWork\Command;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
-class NewCommand
+final class NewCommand
 {
     private $object;
 

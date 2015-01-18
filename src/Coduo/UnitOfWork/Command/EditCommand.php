@@ -5,7 +5,7 @@ namespace Coduo\UnitOfWork\Command;
 use Coduo\UnitOfWork\ChangeSet;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
-class EditCommand
+final class EditCommand
 {
     /**
      * @var mixed
