@@ -1,6 +1,6 @@
 <?php
 
-namespace Coduo\UnitOfWork;
+namespace Coduo\UnitOfWork\ObjectClass;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 

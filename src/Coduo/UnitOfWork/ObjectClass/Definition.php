@@ -1,14 +1,15 @@
 <?php
 
-namespace Coduo\UnitOfWork;
+namespace Coduo\UnitOfWork\ObjectClass;
 
 use Coduo\UnitOfWork\Command\EditCommandHandler;
 use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Command\RemoveCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\NotExistingPropertyException;
+use Coduo\UnitOfWork\ObjectClass\IdDefinition;
 
-class ClassDefinition
+class Definition
 {
     /**
      * @var string

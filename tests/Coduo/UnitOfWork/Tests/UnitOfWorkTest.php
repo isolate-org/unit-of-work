@@ -4,8 +4,8 @@ namespace Coduo\UnitOfWork\Tests;
 
 use Coduo\UnitOfWork\Change;
 use Coduo\UnitOfWork\ChangeSet;
-use Coduo\UnitOfWork\ClassDefinition;
-use Coduo\UnitOfWork\IdDefinition;
+use Coduo\UnitOfWork\ObjectClass\Definition;
+use Coduo\UnitOfWork\ObjectClass\IdDefinition;
 use Coduo\UnitOfWork\ObjectStates;
 use Coduo\UnitOfWork\ObjectInformationPoint;
 use Coduo\UnitOfWork\Tests\Double\EditCommandHandlerMock;
@@ -20,7 +20,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 {
     function test_commit_of_new_object()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             NotPersistedEntityStub::getClassName(),
             new IdDefinition("id"),
             ["name"]
@@ -44,7 +44,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_commit_of_edited_and_persisted_object()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
@@ -72,7 +72,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_commit_of_removed_and_persisted_object()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
@@ -95,7 +95,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_rollback_object_before_commit()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
@@ -120,7 +120,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_rollback_when_command_handler_return_false()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
@@ -145,7 +145,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_that_rollback_after_successful_commit_have_no_affect_for_objects()
     {
-        $classDefinition = new ClassDefinition(
+        $classDefinition = new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]

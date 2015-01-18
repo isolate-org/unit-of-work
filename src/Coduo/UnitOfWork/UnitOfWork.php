@@ -7,6 +7,7 @@ use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Command\RemoveCommand;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
+use Coduo\UnitOfWork\ObjectClass\Definition;
 
 class UnitOfWork
 {
@@ -157,7 +158,7 @@ class UnitOfWork
      * @param $objectClassDefinition
      * @param $object
      */
-    private function handleNewObject(ClassDefinition $objectClassDefinition, $object)
+    private function handleNewObject(Definition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasNewCommandHandler()) {
             return $objectClassDefinition->getNewCommandHandler()->handle(
@@ -172,7 +173,7 @@ class UnitOfWork
      * @param $originObject
      * @throws RuntimeException
      */
-    private function handleEditedObject(ClassDefinition $objectClassDefinition, $object, $originObject)
+    private function handleEditedObject(Definition $objectClassDefinition, $object, $originObject)
     {
         if ($objectClassDefinition->hasEditCommandHandler()) {
             return $objectClassDefinition->getEditCommandHandler()
@@ -187,7 +188,7 @@ class UnitOfWork
      * @param $object
      * @throws RuntimeException
      */
-    private function handleRemovedObject(ClassDefinition $objectClassDefinition, $object)
+    private function handleRemovedObject(Definition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasRemoveCommandHandler()) {
             return $objectClassDefinition->getRemoveCommandHandler()

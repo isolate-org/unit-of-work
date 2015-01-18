@@ -2,7 +2,7 @@
 
 namespace spec\Coduo\UnitOfWork;
 
-use Coduo\UnitOfWork\ClassDefinition;
+use Coduo\UnitOfWork\ObjectClass\Definition;
 use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
@@ -100,7 +100,7 @@ class UnitOfWorkSpec extends ObjectBehavior
 
     function it_handle_new_command_when_there_is_object_that_should_be_persisted(
         ObjectInformationPoint $objectInformationPoint,
-        ClassDefinition $classDefinition,
+        Definition $classDefinition,
         NewCommandHandler $commandHandler
     ) {
         $object = new NotPersistedEntityStub();
