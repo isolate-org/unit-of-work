@@ -172,6 +172,26 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(ObjectStates::PERSISTED_OBJECT, $unitOfWork->getObjectState($object));
     }
 
+    function test_state_of_registered_and_changed_object_that_does_not_have_id()
+    {
+        $classDefinition = new Definition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(null, "Dawid", "Sajdak");
+        $unitOfWork->register($object);
+        $object->changeFirstName("Norbert");
+
+        $this->assertSame(ObjectStates::NEW_OBJECT, $unitOfWork->getObjectState($object));
+
+    }
     /**
      * @param $classDefinitions
      * @return UnitOfWork

@@ -37,6 +37,21 @@ class UnitOfWork
     private $objectRecovery;
 
     /**
+     * @var int
+     */
+    private $totalNewObjects;
+
+    /**
+     * @var int
+     */
+    private $totalEditedObjects;
+
+    /**
+     * @var int
+     */
+    private $totalRemovedObjects;
+
+    /**
      * @param ObjectInformationPoint $objectInformationPoint
      */
     public function __construct(ObjectInformationPoint $objectInformationPoint)
@@ -46,6 +61,9 @@ class UnitOfWork
         $this->objects = [];
         $this->originObjects = [];
         $this->objectRecovery = new ObjectRecovery();
+        $this->totalNewObjects = 0;
+        $this->totalEditedObjects = 0;
+        $this->totalRemovedObjects = 0;
     }
 
     /**
@@ -89,6 +107,10 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
+        if ($this->states[spl_object_hash($object)] === ObjectStates::NEW_OBJECT) {
+            return ObjectStates::NEW_OBJECT;
+        }
+
         if (!$this->objectInformationPoint->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
@@ -116,6 +138,7 @@ class UnitOfWork
     public function commit()
     {
         $removedObjectHashes = [];
+        $this->countObjects();
 
         foreach ($this->objects as $objectHash => $object) {
             $originObject = $this->originObjects[$objectHash];
@@ -162,7 +185,7 @@ class UnitOfWork
     {
         if ($objectClassDefinition->hasNewCommandHandler()) {
             return $objectClassDefinition->getNewCommandHandler()->handle(
-                new NewCommand($object)
+                new NewCommand($object, $this->totalNewObjects)
             );
         }
     }
@@ -177,12 +200,17 @@ class UnitOfWork
     {
         if ($objectClassDefinition->hasEditCommandHandler()) {
             return $objectClassDefinition->getEditCommandHandler()
-                ->handle(new EditCommand($object, $this->objectInformationPoint->getChanges(
-                    $originObject,
-                    $object
-                )));
+                ->handle(new EditCommand(
+                    $object,
+                    $this->objectInformationPoint->getChanges(
+                        $originObject,
+                        $object
+                    ),
+                    $this->totalEditedObjects
+                ));
         }
     }
+
     /**
      * @param $objectClassDefinition
      * @param $object
@@ -192,7 +220,7 @@ class UnitOfWork
     {
         if ($objectClassDefinition->hasRemoveCommandHandler()) {
             return $objectClassDefinition->getRemoveCommandHandler()
-                ->handle(new RemoveCommand($object));
+                ->handle(new RemoveCommand($object, $this->totalRemovedObjects));
         }
     }
 
@@ -213,6 +241,27 @@ class UnitOfWork
         foreach ($this->objects as $objectHash => $object) {
             $this->originObjects[$objectHash] = $object;
             $this->states[$objectHash] = ObjectStates::PERSISTED_OBJECT;
+        }
+    }
+
+    private function countObjects()
+    {
+        $this->totalNewObjects = 0;
+        $this->totalEditedObjects = 0;
+        $this->totalRemovedObjects = 0;
+
+        foreach ($this->objects as $objectHash => $object) {
+            switch($this->getObjectState($object)) {
+                case ObjectStates::NEW_OBJECT:
+                    $this->totalNewObjects++;
+                    break;
+                case ObjectStates::EDITED_OBJECT:
+                    $this->totalEditedObjects++;
+                    break;
+                case ObjectStates::REMOVED_OBJECT:
+                    $this->totalRemovedObjects++;
+                    break;
+            }
         }
     }
 }
