@@ -8,7 +8,7 @@ use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\ObjectStates;
-use Coduo\UnitOfWork\ObjectVerifier;
+use Coduo\UnitOfWork\ObjectInformationPoint;
 use Coduo\UnitOfWork\Tests\Double\EditablePersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
@@ -18,22 +18,22 @@ use Prophecy\Argument;
 class UnitOfWorkSpec extends ObjectBehavior
 {
 
-    function let(ObjectVerifier $objectVerifier)
+    function let(ObjectInformationPoint $objectInformationPoint)
     {
-        $objectVerifier->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub"))
+        $objectInformationPoint->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub"))
             ->willReturn(false);
-        $objectVerifier->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub"))
+        $objectInformationPoint->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub"))
             ->willReturn(true);
-        $objectVerifier->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub"))
+        $objectInformationPoint->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub"))
             ->willReturn(true);
-        $objectVerifier->isEqual(
+        $objectInformationPoint->isEqual(
                 Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub"),
                 Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub")
             )->willReturn(false);
 
-        $objectVerifier->isEqual(Argument::any(), Argument::any())->willReturn(true);
+        $objectInformationPoint->isEqual(Argument::any(), Argument::any())->willReturn(true);
 
-        $this->beConstructedWith($objectVerifier);
+        $this->beConstructedWith($objectInformationPoint);
     }
 
     function it_throw_exception_during_non_object_registration()
@@ -99,12 +99,12 @@ class UnitOfWorkSpec extends ObjectBehavior
     }
 
     function it_handle_new_command_when_there_is_object_that_should_be_persisted(
-        ObjectVerifier $objectVerifier,
+        ObjectInformationPoint $objectInformationPoint,
         ClassDefinition $classDefinition,
         NewCommandHandler $commandHandler
     ) {
         $object = new NotPersistedEntityStub();
-        $objectVerifier->getDefinition($object)->willReturn($classDefinition);
+        $objectInformationPoint->getDefinition($object)->willReturn($classDefinition);
         $classDefinition->hasNewCommandHandler()->willReturn(true);
         $classDefinition->getNewCommandHandler()->willReturn($commandHandler);
         $commandHandler->handle(new NewCommand($object))->shouldBeCalled();
