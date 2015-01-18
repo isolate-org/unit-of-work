@@ -12,9 +12,17 @@ use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\FailingBatchEditCommandHandlerStub;
 use Coduo\UnitOfWork\UnitOfWork;
 use Faker\Factory;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
 {
+    private $eventDispatcher;
+
+    public function setUp()
+    {
+        $this->eventDispatcher = new EventDispatcher();
+    }
+
     function test_handling_batch_of_new_commands()
     {
         $classDefinition = $this->createClassDefinition();
@@ -171,6 +179,6 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork(array $classDefinitions = [])
     {
-        return new UnitOfWork(new ObjectInformationPoint($classDefinitions));
+        return new UnitOfWork(new ObjectInformationPoint($classDefinitions), $this->eventDispatcher);
     }
 }

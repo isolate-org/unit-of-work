@@ -7,16 +7,16 @@ use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\ObjectStates;
 use Coduo\UnitOfWork\ObjectInformationPoint;
 use Coduo\UnitOfWork\Tests\Double\EditablePersistedEntityStub;
-use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkSpec extends ObjectBehavior
 {
 
-    function let(ObjectInformationPoint $objectInformationPoint)
+    function let(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
     {
         $objectInformationPoint->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub"))
             ->willReturn(false);
@@ -31,7 +31,7 @@ class UnitOfWorkSpec extends ObjectBehavior
 
         $objectInformationPoint->isEqual(Argument::any(), Argument::any())->willReturn(true);
 
-        $this->beConstructedWith($objectInformationPoint);
+        $this->beConstructedWith($objectInformationPoint, $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()

@@ -4,6 +4,8 @@ namespace Coduo\UnitOfWork\Tests;
 
 use Coduo\UnitOfWork\Change;
 use Coduo\UnitOfWork\ChangeSet;
+use Coduo\UnitOfWork\Event\PostCommit;
+use Coduo\UnitOfWork\Events;
 use Coduo\UnitOfWork\ObjectClass\Definition;
 use Coduo\UnitOfWork\ObjectClass\IdDefinition;
 use Coduo\UnitOfWork\ObjectStates;
@@ -15,9 +17,21 @@ use Coduo\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
 use Coduo\UnitOfWork\UnitOfWork;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    public function setUp()
+    {
+        $this->eventDispatcher = new EventDispatcher();
+    }
+
     function test_commit_of_new_object()
     {
         $classDefinition = new Definition(
@@ -192,12 +206,47 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(ObjectStates::NEW_OBJECT, $unitOfWork->getObjectState($object));
     }
 
+    function test_event_dispatching_during_successful_commit()
+    {
+        $preCommitEventDispatched = false;
+        $postCommitEventDispatched = false;
+        $this->eventDispatcher->addListener(Events::PRE_COMMIT, function(Event $event) use (&$preCommitEventDispatched) {
+            $preCommitEventDispatched = true;
+        });
+        $this->eventDispatcher->addListener(Events::POST_COMMIT, function(PostCommit $event) use (&$postCommitEventDispatched) {
+            $this->assertTrue($event->isSuccessful());
+            $postCommitEventDispatched = true;
+        });
+
+        $classDefinition = new Definition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Norbert", "Orzechowicz");
+        $unitOfWork->register($object);
+
+        $object->changeFirstName("Michal");
+        $object->changeLastName("Dabrowski");
+
+        $unitOfWork->commit();
+
+        $this->assertTrue($preCommitEventDispatched);
+        $this->assertTrue($postCommitEventDispatched);
+    }
+
     /**
      * @param $classDefinitions
      * @return UnitOfWork
      */
     private function createUnitOfWork(array $classDefinitions = [])
     {
-        return new UnitOfWork(new ObjectInformationPoint($classDefinitions));
+        return new UnitOfWork(new ObjectInformationPoint($classDefinitions), $this->eventDispatcher);
     }
 }
