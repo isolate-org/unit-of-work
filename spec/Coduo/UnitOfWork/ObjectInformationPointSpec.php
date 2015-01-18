@@ -54,6 +54,20 @@ class ObjectInformationPointSpec extends ObjectBehavior
         $this->isPersisted($entity)->shouldReturn(true);
     }
 
+    function it_tells_that_object_is_persisted_when_it_has_identity_equal_to_zero()
+    {
+        $this->beConstructedWith([
+            new Definition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
+                new IdDefinition("id"),
+                []
+            )
+        ]);
+
+        $entity = new EntityFake(0);
+        $this->isPersisted($entity)->shouldReturn(true);
+    }
+
     function it_tells_that_object_is_not_persisted_when_it_has_empty_identity()
     {
         $this->beConstructedWith([

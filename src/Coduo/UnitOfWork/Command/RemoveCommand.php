@@ -6,6 +6,9 @@ use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
 final class RemoveCommand
 {
+    /**
+     * @var mixed
+     */
     private $object;
 
     /**
@@ -14,7 +17,7 @@ final class RemoveCommand
     private $totalRemovedObjects;
 
     /**
-     * @param $object
+     * @param mixed $object
      * @param int $totalRemovedObjects
      * @throws InvalidArgumentException
      */

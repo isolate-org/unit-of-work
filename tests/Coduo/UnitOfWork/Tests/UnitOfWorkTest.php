@@ -190,8 +190,8 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $object->changeFirstName("Norbert");
 
         $this->assertSame(ObjectStates::NEW_OBJECT, $unitOfWork->getObjectState($object));
-
     }
+
     /**
      * @param $classDefinitions
      * @return UnitOfWork

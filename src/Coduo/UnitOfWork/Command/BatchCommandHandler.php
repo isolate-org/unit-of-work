@@ -11,6 +11,9 @@ trait BatchCommandHandler
      */
     private $maximumBatchSize = 10;
 
+    /**
+     * @var int
+     */
     private $handledCommands = 0;
 
     /**

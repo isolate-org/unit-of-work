@@ -23,7 +23,7 @@ final class EditCommand
     private $totalEditedObjects;
 
     /**
-     * @param $object
+     * @param mixed $object
      * @param ChangeSet $changeSet
      * @param int $totalEditedObjects
      * @throws InvalidArgumentException

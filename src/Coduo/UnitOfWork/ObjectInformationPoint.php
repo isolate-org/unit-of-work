@@ -65,7 +65,7 @@ class ObjectInformationPoint
             ));
         }
 
-        return !empty($identity);
+        return !empty($identity) || $identity === 0;
     }
 
     /**

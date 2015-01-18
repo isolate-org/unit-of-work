@@ -27,7 +27,7 @@ class ChangeSetSpec extends ObjectBehavior
     {
         $this->beConstructedWith([]);
 
-        $this->shouldThrow(new RuntimeException("There are not changes for \"firstName\" property."))
+        $this->shouldThrow(new RuntimeException("There are no changes for \"firstName\" property."))
             ->during('getChangeFor', ["firstName"]);
     }
 }

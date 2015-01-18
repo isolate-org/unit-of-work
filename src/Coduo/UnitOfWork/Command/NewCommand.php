@@ -6,6 +6,9 @@ use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
 final class NewCommand
 {
+    /**
+     * @var mixed
+     */
     private $object;
 
     /**
@@ -14,7 +17,7 @@ final class NewCommand
     private $totalNewObjects;
 
     /**
-     * @param $object
+     * @param mixed $object
      * @param int $totalNewObjects
      * @throws InvalidArgumentException
      */

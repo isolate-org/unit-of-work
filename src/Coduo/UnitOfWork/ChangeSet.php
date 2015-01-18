@@ -36,7 +36,7 @@ class ChangeSet extends \ArrayObject
             }
         }
 
-        throw new RuntimeException(sprintf("There are not changes for \"%s\" property.", $propertyName));
+        throw new RuntimeException(sprintf("There are no changes for \"%s\" property.", $propertyName));
     }
 
     /**

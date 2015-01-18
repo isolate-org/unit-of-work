@@ -147,7 +147,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
         $objects = [];
         $faker = Factory::create();
         for ($i = 0; $i < $count; $i++) {
-            $objects[] = new EntityFake($faker->randomNumber(), $faker->firstName, $faker->lastName);
+            $objects[] = new EntityFake($faker->numberBetween(1, 10000), "Name", "Old");
         }
 
         return $objects;
@@ -158,12 +158,11 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
      */
     private function createClassDefinition()
     {
-        $classDefinition = new Definition(
+        return new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
         );
-        return $classDefinition;
     }
 
     /**

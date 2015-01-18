@@ -4,14 +4,25 @@ namespace Coduo\UnitOfWork;
 
 final class Change
 {
+    /**
+     * @var mixed
+     */
     private $originValue;
+
+    /**
+     * @var mixed
+     */
     private $newValue;
+
+    /**
+     * @var string
+     */
     private $propertyName;
 
     /**
      * @param $originValue
      * @param $newValue
-     * @param $propertyName
+     * @param string $propertyName
      */
     public function __construct($originValue, $newValue, $propertyName)
     {
@@ -44,6 +55,10 @@ final class Change
         return $this->propertyName;
     }
 
+    /**
+     * @param $propertyName
+     * @return bool
+     */
     public function isFor($propertyName)
     {
         return $this->propertyName === $propertyName;

@@ -20,5 +20,8 @@ final class ObjectStates
      */
     const EDITED_OBJECT = 2;
 
+    /**
+     * Persisted objects that should be deleted
+     */
     const REMOVED_OBJECT = 3;
 }

@@ -9,6 +9,9 @@ use Coduo\UnitOfWork\Object\PropertyAccessor;
 
 final class ChangeBuilder
 {
+    /**
+     * @var PropertyAccessor
+     */
     private $propertyAccessor;
 
     public function __construct()
