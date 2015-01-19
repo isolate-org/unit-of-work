@@ -2,9 +2,6 @@
 
 namespace spec\Coduo\UnitOfWork;
 
-use Coduo\UnitOfWork\ClassDefinition;
-use Coduo\UnitOfWork\Command\NewCommand;
-use Coduo\UnitOfWork\Command\NewCommandHandler;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\ObjectStates;
@@ -14,11 +11,12 @@ use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkSpec extends ObjectBehavior
 {
 
-    function let(ObjectInformationPoint $objectInformationPoint)
+    function let(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
     {
         $objectInformationPoint->isPersisted(Argument::type("Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub"))
             ->willReturn(false);
@@ -33,7 +31,7 @@ class UnitOfWorkSpec extends ObjectBehavior
 
         $objectInformationPoint->isEqual(Argument::any(), Argument::any())->willReturn(true);
 
-        $this->beConstructedWith($objectInformationPoint);
+        $this->beConstructedWith($objectInformationPoint, $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()
@@ -96,20 +94,5 @@ class UnitOfWorkSpec extends ObjectBehavior
         $object = new PersistedEntityStub();
         $this->remove($object);
         $this->getObjectState($object)->shouldReturn(ObjectStates::REMOVED_OBJECT);
-    }
-
-    function it_handle_new_command_when_there_is_object_that_should_be_persisted(
-        ObjectInformationPoint $objectInformationPoint,
-        ClassDefinition $classDefinition,
-        NewCommandHandler $commandHandler
-    ) {
-        $object = new NotPersistedEntityStub();
-        $objectInformationPoint->getDefinition($object)->willReturn($classDefinition);
-        $classDefinition->hasNewCommandHandler()->willReturn(true);
-        $classDefinition->getNewCommandHandler()->willReturn($commandHandler);
-        $commandHandler->handle(new NewCommand($object))->shouldBeCalled();
-
-        $this->register($object);
-        $this->commit();
     }
 }

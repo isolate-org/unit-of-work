@@ -1,6 +1,6 @@
 <?php
 
-namespace spec\Coduo\UnitOfWork;
+namespace spec\Coduo\UnitOfWork\ObjectClass;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use PhpSpec\ObjectBehavior;

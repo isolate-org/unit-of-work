@@ -1,6 +1,6 @@
 <?php
 
-namespace Coduo\UnitOfWork;
+namespace Coduo\UnitOfWork\ObjectClass;
 
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 
@@ -28,11 +28,18 @@ final class IdDefinition
         $this->propertyPath = $propertyPath;
     }
 
+    /**
+     * @return string
+     */
     public function getPropertyPath()
     {
         return $this->propertyPath;
     }
 
+    /**
+     * @param string $propertyPath
+     * @return bool
+     */
     public function itFits($propertyPath)
     {
         return $this->propertyPath === $propertyPath;

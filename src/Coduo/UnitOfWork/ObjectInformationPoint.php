@@ -5,6 +5,7 @@ namespace Coduo\UnitOfWork;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\InvalidPropertyPathException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
+use Coduo\UnitOfWork\ObjectClass\Definition;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -16,7 +17,7 @@ class ObjectInformationPoint
     private $changeBuilder;
 
     /**
-     * @var array|ClassDefinition[]
+     * @var array|Definition[]
      */
     private $classDefinitions;
 
@@ -31,7 +32,7 @@ class ObjectInformationPoint
         }
 
         foreach ($classDefinitions as $definition) {
-            if (!$definition instanceof ClassDefinition) {
+            if (!$definition instanceof Definition) {
                 throw new InvalidArgumentException(
                     "Each element of class definitions collection must be an instance of \\Coduo\\UnitOfWork\\ClassDefinition."
                 );
@@ -64,7 +65,7 @@ class ObjectInformationPoint
             ));
         }
 
-        return !empty($identity);
+        return !empty($identity) || $identity === 0;
     }
 
     /**
@@ -120,7 +121,7 @@ class ObjectInformationPoint
 
     /**
      * @param $object
-     * @return ClassDefinition
+     * @return Definition
      * @throws RuntimeException
      */
     public function getDefinition($object)

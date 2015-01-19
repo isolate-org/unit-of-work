@@ -5,8 +5,11 @@ namespace Coduo\UnitOfWork;
 use Coduo\UnitOfWork\Command\EditCommand;
 use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Command\RemoveCommand;
+use Coduo\UnitOfWork\Event\PostCommit;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
+use Coduo\UnitOfWork\ObjectClass\Definition;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWork
 {
@@ -36,15 +39,40 @@ class UnitOfWork
     private $objectRecovery;
 
     /**
-     * @param ObjectInformationPoint $objectInformationPoint
+     * @var int
      */
-    public function __construct(ObjectInformationPoint $objectInformationPoint)
+    private $totalNewObjects;
+
+    /**
+     * @var int
+     */
+    private $totalEditedObjects;
+
+    /**
+     * @var int
+     */
+    private $totalRemovedObjects;
+
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    /**
+     * @param ObjectInformationPoint $objectInformationPoint
+     * @param EventDispatcher $eventDispatcher
+     */
+    public function __construct(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
     {
         $this->objectInformationPoint = $objectInformationPoint;
         $this->states = [];
         $this->objects = [];
         $this->originObjects = [];
         $this->objectRecovery = new ObjectRecovery();
+        $this->totalNewObjects = 0;
+        $this->totalEditedObjects = 0;
+        $this->totalRemovedObjects = 0;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -88,6 +116,10 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
+        if ($this->states[spl_object_hash($object)] === ObjectStates::NEW_OBJECT) {
+            return ObjectStates::NEW_OBJECT;
+        }
+
         if (!$this->objectInformationPoint->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
             return ObjectStates::EDITED_OBJECT;
         }
@@ -115,6 +147,9 @@ class UnitOfWork
     public function commit()
     {
         $removedObjectHashes = [];
+        $this->countObjects();
+
+        $this->eventDispatcher->dispatch(Events::PRE_COMMIT);
 
         foreach ($this->objects as $objectHash => $object) {
             $originObject = $this->originObjects[$objectHash];
@@ -136,6 +171,7 @@ class UnitOfWork
 
             if ($commandResult === false) {
                 $this->rollback();
+                $this->eventDispatcher->dispatch(Events::POST_COMMIT, new PostCommit(false));
                 return ;
             }
         }
@@ -143,6 +179,7 @@ class UnitOfWork
         $this->unregisterObjects($removedObjectHashes);
         $this->updateObjectsAndStates();
 
+        $this->eventDispatcher->dispatch(Events::POST_COMMIT, new PostCommit());
         unset($removedObjectHashes);
     }
 
@@ -157,11 +194,11 @@ class UnitOfWork
      * @param $objectClassDefinition
      * @param $object
      */
-    private function handleNewObject(ClassDefinition $objectClassDefinition, $object)
+    private function handleNewObject(Definition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasNewCommandHandler()) {
             return $objectClassDefinition->getNewCommandHandler()->handle(
-                new NewCommand($object)
+                new NewCommand($object, $this->totalNewObjects)
             );
         }
     }
@@ -172,26 +209,31 @@ class UnitOfWork
      * @param $originObject
      * @throws RuntimeException
      */
-    private function handleEditedObject(ClassDefinition $objectClassDefinition, $object, $originObject)
+    private function handleEditedObject(Definition $objectClassDefinition, $object, $originObject)
     {
         if ($objectClassDefinition->hasEditCommandHandler()) {
             return $objectClassDefinition->getEditCommandHandler()
-                ->handle(new EditCommand($object, $this->objectInformationPoint->getChanges(
-                    $originObject,
-                    $object
-                )));
+                ->handle(new EditCommand(
+                    $object,
+                    $this->objectInformationPoint->getChanges(
+                        $originObject,
+                        $object
+                    ),
+                    $this->totalEditedObjects
+                ));
         }
     }
+
     /**
      * @param $objectClassDefinition
      * @param $object
      * @throws RuntimeException
      */
-    private function handleRemovedObject(ClassDefinition $objectClassDefinition, $object)
+    private function handleRemovedObject(Definition $objectClassDefinition, $object)
     {
         if ($objectClassDefinition->hasRemoveCommandHandler()) {
             return $objectClassDefinition->getRemoveCommandHandler()
-                ->handle(new RemoveCommand($object));
+                ->handle(new RemoveCommand($object, $this->totalRemovedObjects));
         }
     }
 
@@ -212,6 +254,27 @@ class UnitOfWork
         foreach ($this->objects as $objectHash => $object) {
             $this->originObjects[$objectHash] = $object;
             $this->states[$objectHash] = ObjectStates::PERSISTED_OBJECT;
+        }
+    }
+
+    private function countObjects()
+    {
+        $this->totalNewObjects = 0;
+        $this->totalEditedObjects = 0;
+        $this->totalRemovedObjects = 0;
+
+        foreach ($this->objects as $objectHash => $object) {
+            switch($this->getObjectState($object)) {
+                case ObjectStates::NEW_OBJECT:
+                    $this->totalNewObjects++;
+                    break;
+                case ObjectStates::EDITED_OBJECT:
+                    $this->totalEditedObjects++;
+                    break;
+                case ObjectStates::REMOVED_OBJECT:
+                    $this->totalRemovedObjects++;
+                    break;
+            }
         }
     }
 }

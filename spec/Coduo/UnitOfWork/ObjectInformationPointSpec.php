@@ -2,12 +2,11 @@
 
 namespace spec\Coduo\UnitOfWork;
 
-use Coduo\UnitOfWork\ClassDefinition;
+use Coduo\UnitOfWork\ObjectClass\Definition;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\InvalidPropertyPathException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
-use Coduo\UnitOfWork\IdDefinition;
-use Coduo\UnitOfWork\Tests\Double\EditablePersistedEntityStub;
+use Coduo\UnitOfWork\ObjectClass\IdDefinition;
 use Coduo\UnitOfWork\Tests\Double\EntityFake;
 use Coduo\UnitOfWork\Tests\Double\PersistedEntityStub;
 use Coduo\UnitOfWork\Tests\Double\NotPersistedEntityStub;
@@ -44,7 +43,7 @@ class ObjectInformationPointSpec extends ObjectBehavior
     function it_tells_that_object_is_persisted_when_it_has_not_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
                 new IdDefinition("id"),
                 []
@@ -55,10 +54,24 @@ class ObjectInformationPointSpec extends ObjectBehavior
         $this->isPersisted($entity)->shouldReturn(true);
     }
 
+    function it_tells_that_object_is_persisted_when_it_has_identity_equal_to_zero()
+    {
+        $this->beConstructedWith([
+            new Definition(
+                "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
+                new IdDefinition("id"),
+                []
+            )
+        ]);
+
+        $entity = new EntityFake(0);
+        $this->isPersisted($entity)->shouldReturn(true);
+    }
+
     function it_tells_that_object_is_not_persisted_when_it_has_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub",
                 new IdDefinition("id"),
                 []
@@ -72,7 +85,7 @@ class ObjectInformationPointSpec extends ObjectBehavior
     function it_throws_exception_during_persist_check_when_property_does_not_exists()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\PersistedEntityStub",
                 new IdDefinition("not_exists"),
                 []
@@ -88,7 +101,7 @@ class ObjectInformationPointSpec extends ObjectBehavior
     function it_compare_two_equal_objects()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
                 new IdDefinition("id"),
                 ["firstName"]
@@ -104,7 +117,7 @@ class ObjectInformationPointSpec extends ObjectBehavior
     function it_compare_two_different_objects()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
                 new IdDefinition("id"),
                 ["firstName"]
@@ -121,7 +134,7 @@ class ObjectInformationPointSpec extends ObjectBehavior
     function it_get_changes_between_objects()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
+            new Definition(
                 "\\Coduo\\UnitOfWork\\Tests\\Double\\EntityFake",
                 new IdDefinition("id"),
                 ["firstName"]
