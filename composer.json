@@ -1,5 +1,5 @@
 {
-    "name": "coduo/unit-of-work",
+    "name": "isolate/unit-of-work",
     "description": "Generic unit of work",
     "require": {
         "symfony/property-access": "~2.1",
@@ -12,8 +12,8 @@
     },
     "autoload": {
         "psr-0": {
-            "Coduo\\UnitOfWork": "src/",
-            "Coduo\\UnitOfWork\\Tests": "tests/"
+            "Isolate\\UnitOfWork": "src/",
+            "Isolate\\UnitOfWork\\Tests": "tests/"
         }
     },
     "extra": {
