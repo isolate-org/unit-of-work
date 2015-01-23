@@ -38,6 +38,14 @@ class EntityFake
     }
 
     /**
+     * @param $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @param $newLastName
      */
     public function changeLastName($newLastName)

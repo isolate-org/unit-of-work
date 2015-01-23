@@ -36,7 +36,7 @@ class UnitOfWorkSpec extends ObjectBehavior
 
     function it_throw_exception_during_non_object_registration()
     {
-        $this->shouldThrow(new InvalidArgumentException("Only object can be register."))
+        $this->shouldThrow(new InvalidArgumentException("Only objects can be registered in Unit of Work."))
             ->during("register", ["Coduo"]);
     }
 

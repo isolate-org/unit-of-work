@@ -5,6 +5,9 @@ namespace Coduo\UnitOfWork\Tests;
 use Coduo\UnitOfWork\Change;
 use Coduo\UnitOfWork\ChangeSet;
 use Coduo\UnitOfWork\Event\PostCommit;
+use Coduo\UnitOfWork\Event\PreGetState;
+use Coduo\UnitOfWork\Event\PreRegister;
+use Coduo\UnitOfWork\Event\PreRemove;
 use Coduo\UnitOfWork\Events;
 use Coduo\UnitOfWork\ObjectClass\Definition;
 use Coduo\UnitOfWork\ObjectClass\IdDefinition;
@@ -34,36 +37,23 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_commit_of_new_object()
     {
-        $classDefinition = new Definition(
-            NotPersistedEntityStub::getClassName(),
-            new IdDefinition("id"),
-            ["name"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addNewCommandHandler(new NewCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
         ]);
 
-        $object1 = new NotPersistedEntityStub();
-        $object2 = new NotPersistedEntityStub();
-        $unitOfWork->register($object1);
-        $unitOfWork->register($object2);
+        $object = new EntityFake();
+        $unitOfWork->register($object);
 
         $unitOfWork->commit();
 
-        $this->assertTrue($classDefinition->getNewCommandHandler()->objectWasPersisted($object1));
-        $this->assertTrue($classDefinition->getNewCommandHandler()->objectWasPersisted($object2));
+        $this->assertTrue($classDefinition->getNewCommandHandler()->objectWasPersisted($object));
     }
 
     function test_commit_of_edited_and_persisted_object()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -86,12 +76,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_commit_of_removed_and_persisted_object()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addRemoveCommandHandler(new RemoveCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -109,12 +94,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_rollback_object_before_commit()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addRemoveCommandHandler(new RemoveCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -134,12 +114,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_rollback_when_command_handler_return_false()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addEditCommandHandler(new FailingCommandHandlerStub());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -159,12 +134,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_that_rollback_after_successful_commit_have_no_affect_for_objects()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -188,12 +158,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
     function test_state_of_registered_and_changed_object_that_does_not_have_id()
     {
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
-
+        $classDefinition = $this->createFakeEntityDefinition();
         $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -218,11 +183,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             $postCommitEventDispatched = true;
         });
 
-        $classDefinition = new Definition(
-            EntityFake::getClassName(),
-            new IdDefinition("id"),
-            ["firstName", "lastName"]
-        );
+        $classDefinition = $this->createFakeEntityDefinition();
 
         $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
@@ -241,6 +202,67 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($postCommitEventDispatched);
     }
 
+    function test_replacing_object_before_registration_in_unit_of_work()
+    {
+        $objectReplacement = new EntityFake(2, "Dawid", "Sajdak");
+        $this->eventDispatcher->addListener(Events::PRE_REGISTER_OBJECT, function(PreRegister $event) use ($objectReplacement) {
+            $event->replaceObject($objectReplacement);
+        });
+
+        $classDefinition = $this->createFakeEntityDefinition();
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Norbert", "Orzechowicz");
+        $unitOfWork->register($object);
+
+        $this->assertFalse($unitOfWork->isRegistered($object));
+        $this->assertTrue($unitOfWork->isRegistered($objectReplacement));
+    }
+
+    function test_replacing_object_before_checking_state()
+    {
+        $this->eventDispatcher->addListener(Events::PRE_GET_OBJECT_STATE, function(PreGetState $event) {
+            $event->getObject()->setId(1);
+        });
+
+        $classDefinition = $this->createFakeEntityDefinition();
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(null, "Norbert", "Orzechowicz");
+        $unitOfWork->register($object);
+
+        $this->assertSame(ObjectStates::PERSISTED_OBJECT, $unitOfWork->getObjectState($object));
+    }
+
+    function test_pre_remove_event()
+    {
+        $preRemoveTriggered = false;
+        $this->eventDispatcher->addListener(Events::PRE_REMOVE_OBJECT, function(PreRemove $event) use (&$preRemoveTriggered) {
+            $preRemoveTriggered = true;
+        });
+
+        $classDefinition = $this->createFakeEntityDefinition();
+
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(null, "Norbert", "Orzechowicz");
+        $unitOfWork->register($object);
+        $unitOfWork->remove($object);
+
+        $this->assertTrue($preRemoveTriggered);
+    }
+
     /**
      * @param $classDefinitions
      * @return UnitOfWork
@@ -248,5 +270,18 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     private function createUnitOfWork(array $classDefinitions = [])
     {
         return new UnitOfWork(new ObjectInformationPoint($classDefinitions), $this->eventDispatcher);
+    }
+
+    /**
+     * @return Definition
+     */
+    private function createFakeEntityDefinition()
+    {
+        $classDefinition = new Definition(
+            EntityFake::getClassName(),
+            new IdDefinition("id"),
+            ["firstName", "lastName"]
+        );
+        return $classDefinition;
     }
 }

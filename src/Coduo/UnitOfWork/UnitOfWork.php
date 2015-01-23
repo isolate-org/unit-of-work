@@ -6,6 +6,9 @@ use Coduo\UnitOfWork\Command\EditCommand;
 use Coduo\UnitOfWork\Command\NewCommand;
 use Coduo\UnitOfWork\Command\RemoveCommand;
 use Coduo\UnitOfWork\Event\PostCommit;
+use Coduo\UnitOfWork\Event\PreGetState;
+use Coduo\UnitOfWork\Event\PreRegister;
+use Coduo\UnitOfWork\Event\PreRemove;
 use Coduo\UnitOfWork\Exception\InvalidArgumentException;
 use Coduo\UnitOfWork\Exception\RuntimeException;
 use Coduo\UnitOfWork\ObjectClass\Definition;
@@ -21,7 +24,7 @@ class UnitOfWork
     /**
      * @var array
      */
-    private $states;
+    private $removedObjects;
 
     /**
      * @var array
@@ -65,7 +68,7 @@ class UnitOfWork
     public function __construct(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
     {
         $this->objectInformationPoint = $objectInformationPoint;
-        $this->states = [];
+        $this->removedObjects = [];
         $this->objects = [];
         $this->originObjects = [];
         $this->objectRecovery = new ObjectRecovery();
@@ -83,17 +86,21 @@ class UnitOfWork
     public function register($object)
     {
         if (!is_object($object)) {
-            throw new InvalidArgumentException("Only object can be register.");
+            throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
         }
+
+        $event = new PreRegister($object);
+        $this->eventDispatcher->dispatch(Events::PRE_REGISTER_OBJECT, $event);
+        $object = $event->getObject();
 
         $hash = spl_object_hash($object);
 
         $this->objects[$hash] = $object;
         $this->originObjects[$hash] = clone($object);
 
-        $this->states[$hash] = $this->objectInformationPoint->isPersisted($object)
-            ? ObjectStates::PERSISTED_OBJECT
-            : ObjectStates::NEW_OBJECT;
+//        $this->states[$hash] = $this->objectInformationPoint->isPersisted($object)
+//            ? ObjectStates::PERSISTED_OBJECT
+//            : ObjectStates::NEW_OBJECT;
     }
 
     /**
@@ -102,21 +109,34 @@ class UnitOfWork
      */
     public function isRegistered($object)
     {
-        return array_key_exists(spl_object_hash($object), $this->states);
+        return array_key_exists(spl_object_hash($object), $this->objects);
     }
 
     /**
      * @param $object
      * @return int
+     * @throws InvalidArgumentException
      * @throws RuntimeException
      */
     public function getObjectState($object)
     {
+        if (!is_object($object)) {
+            throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
+        }
+
+        $event = new PreGetState($object);
+        $this->eventDispatcher->dispatch(Events::PRE_GET_OBJECT_STATE, $event);
+        $object = $event->getObject();
+
         if (!$this->isRegistered($object)) {
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if ($this->states[spl_object_hash($object)] === ObjectStates::NEW_OBJECT) {
+        if (array_key_exists(spl_object_hash($object), $this->removedObjects)) {
+            return ObjectStates::REMOVED_OBJECT;
+        }
+
+        if (!$this->objectInformationPoint->isPersisted($object)) {
             return ObjectStates::NEW_OBJECT;
         }
 
@@ -124,15 +144,25 @@ class UnitOfWork
             return ObjectStates::EDITED_OBJECT;
         }
 
-        return $this->states[spl_object_hash($object)];
+        return ObjectStates::PERSISTED_OBJECT;
     }
 
     /**
      * @param $object
+     * @throws Exception\InvalidPropertyPathException
+     * @throws InvalidArgumentException
      * @throws RuntimeException
      */
     public function remove($object)
     {
+        if (!is_object($object)) {
+            throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
+        }
+
+        $event = new PreRemove($object);
+        $this->eventDispatcher->dispatch(Events::PRE_REMOVE_OBJECT, $event);
+        $object = $event->getObject();
+
         if (!$this->isRegistered($object)) {
             if (!$this->objectInformationPoint->isPersisted($object)) {
                 throw new RuntimeException("Unit of Work can't remove not persisted objects.");
@@ -141,7 +171,7 @@ class UnitOfWork
             $this->register($object);
         }
 
-        $this->states[spl_object_hash($object)] = ObjectStates::REMOVED_OBJECT;
+        $this->removedObjects[spl_object_hash($object)] = $object;
     }
 
     public function commit()
@@ -188,6 +218,8 @@ class UnitOfWork
         foreach ($this->originObjects as $hash => $originObject) {
             $this->objectRecovery->recover($this->objects[$hash], $originObject);
         }
+
+        $this->removedObjects = [];
     }
 
     /**
@@ -243,7 +275,7 @@ class UnitOfWork
     private function unregisterObjects($removedObjectHashes)
     {
         foreach ($removedObjectHashes as $hash) {
-            unset($this->states[$hash]);
+            unset($this->removedObjects[$hash]);
             unset($this->objects[$hash]);
             unset($this->originObjects[$hash]);
         }
@@ -253,7 +285,7 @@ class UnitOfWork
     {
         foreach ($this->objects as $objectHash => $object) {
             $this->originObjects[$objectHash] = $object;
-            $this->states[$objectHash] = ObjectStates::PERSISTED_OBJECT;
+            $this->removedObjects[$objectHash] = ObjectStates::PERSISTED_OBJECT;
         }
     }
 
@@ -263,7 +295,7 @@ class UnitOfWork
         $this->totalEditedObjects = 0;
         $this->totalRemovedObjects = 0;
 
-        foreach ($this->objects as $objectHash => $object) {
+        foreach ($this->objects as $object) {
             switch($this->getObjectState($object)) {
                 case ObjectStates::NEW_OBJECT:
                     $this->totalNewObjects++;
