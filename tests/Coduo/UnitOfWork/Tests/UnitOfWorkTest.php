@@ -277,11 +277,10 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createFakeEntityDefinition()
     {
-        $classDefinition = new Definition(
+        return new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
             ["firstName", "lastName"]
         );
-        return $classDefinition;
     }
 }
