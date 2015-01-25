@@ -33,6 +33,10 @@ final class ChangeBuilder
         $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyName);
         $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyName);
 
+        if ($this->areArrays($firstValue, $secondValue)) {
+            return !$this->arraysAreEqual($firstValue, $secondValue);
+        }
+
         return $firstValue !== $secondValue;
     }
 
@@ -69,5 +73,49 @@ final class ChangeBuilder
         if (get_class($firstObject) !== get_class($secondObject)) {
             throw new InvalidArgumentException("Compared values need to be an instances of the same class.");
         }
+    }
+
+    /**
+     * Recursively check if both arrays contains exactly same elements
+     *
+     * @param $firstArray
+     * @param $secondArray
+     * @return bool
+     */
+    private function arraysAreEqual($firstArray, $secondArray)
+    {
+        if (count($firstArray) != count($secondArray)) {
+            return false;
+        }
+
+        if (array_keys($firstArray) !== array_keys($secondArray)) {
+            return false;
+        }
+
+        foreach ($firstArray as $index => $firstValueElement) {
+            if ($this->areArrays($firstValueElement, $secondArray[$index])) {
+                if (!$this->arraysAreEqual($firstValueElement, $secondArray[$index])) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if ($firstValueElement !== $secondArray[$index]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $firstValue
+     * @param $secondValue
+     * @return bool
+     */
+    private function areArrays($firstValue, $secondValue)
+    {
+        return is_array($firstValue) && is_array($secondValue);
     }
 }

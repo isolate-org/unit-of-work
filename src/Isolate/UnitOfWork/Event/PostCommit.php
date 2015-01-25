@@ -7,7 +7,7 @@ use Symfony\Component\EventDispatcher\Event;
 class PostCommit extends Event
 {
     /**
-     * @var
+     * @var boolean
      */
     private $successful;
 
