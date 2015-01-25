@@ -37,6 +37,10 @@ final class ChangeBuilder
             return !$this->arraysAreEqual($firstValue, $secondValue);
         }
 
+        if ($this->areObjects($firstValue, $secondValue)) {
+            return $firstValue == $secondValue;
+        }
+
         return $firstValue !== $secondValue;
     }
 
@@ -101,6 +105,10 @@ final class ChangeBuilder
                 continue;
             }
 
+            if ($this->areObjects($firstValueElement, $secondArray[$index])) {
+                return $firstValueElement == $secondArray[$index];
+            }
+
             if ($firstValueElement !== $secondArray[$index]) {
                 return false;
             }
@@ -117,5 +125,15 @@ final class ChangeBuilder
     private function areArrays($firstValue, $secondValue)
     {
         return is_array($firstValue) && is_array($secondValue);
+    }
+
+    /**
+     * @param $firstValue
+     * @param $secondValue
+     * @return bool
+     */
+    private function areObjects($firstValue, $secondValue)
+    {
+        return is_object($firstValue) && is_object($secondValue);
     }
 }

@@ -59,7 +59,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $object = new EntityFake(1, "Norbert", "Orzechowicz");
+        $object = new EntityFake(1, "Norbert", "Orzechowicz", [new EntityFake(2)]);
         $unitOfWork->register($object);
 
         $object->changeFirstName("Michal");
