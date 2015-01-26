@@ -59,7 +59,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $object = new EntityFake(1, "Norbert", "Orzechowicz");
+        $object = new EntityFake(1, "Norbert", "Orzechowicz", [new EntityFake(2)]);
         $unitOfWork->register($object);
 
         $object->changeFirstName("Michal");
@@ -70,6 +70,34 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($classDefinition->getEditCommandHandler()->objectWasPersisted($object));
         $this->assertEquals(
             new ChangeSet([new Change("Norbert", "Michal", "firstName"), new Change("Orzechowicz", "Dabrowski", "lastName")]),
+            $classDefinition->getEditCommandHandler()->getPersistedObjectChanges($object)
+        );
+    }
+
+    function test_commit_of_edited_and_persisted_object_with_changes_in_property_that_contains_array()
+    {
+        $classDefinition = $this->createFakeEntityDefinition();
+        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $unitOfWork = $this->createUnitOfWork([
+            $classDefinition
+        ]);
+
+        $object = new EntityFake(1, "Norbert", "Orzechowicz", [new EntityFake(2, "Dawid", "Sajdak")]);
+        $unitOfWork->register($object);
+
+        $items = $object->getItems();
+        $items[0]->changeFirstName("Michal");
+        $items[0]->changeLastName("Dabrowski");
+
+        $unitOfWork->commit();
+
+        $this->assertTrue($classDefinition->getEditCommandHandler()->objectWasPersisted($object));
+        $this->assertEquals(
+            new ChangeSet([new Change(
+                [new EntityFake(2, "Dawid", "Sajdak")],
+                [new EntityFake(2, "Michal", "Dabrowski")],
+                "items"
+            )]),
             $classDefinition->getEditCommandHandler()->getPersistedObjectChanges($object)
         );
     }
@@ -280,7 +308,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         return new Definition(
             EntityFake::getClassName(),
             new IdDefinition("id"),
-            ["firstName", "lastName"]
+            ["firstName", "lastName", "items"]
         );
     }
 }

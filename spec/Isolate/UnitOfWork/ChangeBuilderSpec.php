@@ -59,6 +59,18 @@ class ChangeBuilderSpec extends ObjectBehavior
             ->during("buildChange", [$firstObject, $secondObject, "firstName"]);
     }
 
+    function it_throws_exception_when_property_values_are_identical_arrays()
+    {
+        $firstObject = new EntityFake(1);
+        $firstObject->setItems([new EntityFake(5), new EntityFake(6)]);
+
+        $secondObject = new EntityFake(1);
+        $secondObject->setItems([new EntityFake(5), new EntityFake(6)]);
+
+        $this->shouldThrow(new RuntimeException("There are no differences between objects properties."))
+            ->during("buildChange", [$firstObject, $secondObject, "items"]);
+    }
+
     function it_build_change_for_different_objects()
     {
         $firstObject = new EntityFake(1, "Norbert");

@@ -16,17 +16,22 @@ class EntityFake
      * @var null
      */
     private $lastName;
+    /**
+     * @var array
+     */
+    private $items;
 
     /**
      * @param null $id
      * @param null $firstName
      * @param null $lastName
      */
-    public function __construct($id = null, $firstName = null, $lastName = null)
+    public function __construct($id = null, $firstName = null, $lastName = null, $items = [])
     {
         $this->id = $id;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
+        $this->items = $items;
     }
 
     /**
@@ -75,6 +80,27 @@ class EntityFake
     public function getFirstName()
     {
         return $this->firstName;
+    }
+
+    /**
+     * @return array
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    /**
+     * @param array $items
+     */
+    public function setItems(array $items = [])
+    {
+        $this->items = $items;
+    }
+
+    public function addItem($item)
+    {
+        $this->items[] = $item;
     }
 
     public static function getClassName()

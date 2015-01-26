@@ -2,6 +2,7 @@
 
 namespace Isolate\UnitOfWork;
 
+use Isolate\UnitOfWork\Cloner\Adapter\DeepCopy\Cloner;
 use Isolate\UnitOfWork\Command\EditCommand;
 use Isolate\UnitOfWork\Command\NewCommand;
 use Isolate\UnitOfWork\Command\RemoveCommand;
@@ -20,6 +21,11 @@ class UnitOfWork
      * @var ObjectInformationPoint
      */
     private $objectInformationPoint;
+
+    /**
+     * @var Cloner
+     */
+    private $cloner;
 
     /**
      * @var array
@@ -72,6 +78,7 @@ class UnitOfWork
         $this->objects = [];
         $this->originObjects = [];
         $this->objectRecovery = new ObjectRecovery();
+        $this->cloner = new Cloner();
         $this->totalNewObjects = 0;
         $this->totalEditedObjects = 0;
         $this->totalRemovedObjects = 0;
@@ -96,11 +103,7 @@ class UnitOfWork
         $hash = spl_object_hash($object);
 
         $this->objects[$hash] = $object;
-        $this->originObjects[$hash] = clone($object);
-
-//        $this->states[$hash] = $this->objectInformationPoint->isPersisted($object)
-//            ? ObjectStates::PERSISTED_OBJECT
-//            : ObjectStates::NEW_OBJECT;
+        $this->originObjects[$hash] = $this->cloner->cloneValue($object);
     }
 
     /**
