@@ -2,9 +2,10 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
-use Isolate\UnitOfWork\ObjectClass\Definition;
-use Isolate\UnitOfWork\ObjectClass\IdDefinition;
-use Isolate\UnitOfWork\ObjectInformationPoint;
+use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\IdDefinition;
+use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Tests\Double\BatchEditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchNewCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchRemoveCommandHandlerMock;
@@ -32,10 +33,10 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $objects = $this->generateNewObjects(30);
+        $entities = $this->generateNewEntities(30);
 
-        foreach ($objects as $object) {
-            $unitOfWork->register($object);
+        foreach ($entities as $entity) {
+            $unitOfWork->register($entity);
         }
 
         $unitOfWork->commit();
@@ -53,10 +54,10 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $objects = $this->generateNewObjects(41);
+        $entities = $this->generateNewEntities(41);
 
-        foreach ($objects as $object) {
-            $unitOfWork->register($object);
+        foreach ($entities as $entity) {
+            $unitOfWork->register($entity);
         }
 
         $unitOfWork->commit();
@@ -74,12 +75,12 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $objects = $this->generateEditedObjects(41);
+        $entities = $this->generateEditedObjects(41);
 
-        foreach ($objects as $object) {
-            $unitOfWork->register($object);
-            $object->changeFirstName("New");
-            $object->changeLastName("Name");
+        foreach ($entities as $entity) {
+            $unitOfWork->register($entity);
+            $entity->changeFirstName("New");
+            $entity->changeLastName("Name");
         }
 
         $unitOfWork->commit();
@@ -97,11 +98,11 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $objects = $this->generateNewObjects(21);
+        $entities = $this->generateNewEntities(21);
 
-        foreach ($objects as $object) {
-            $unitOfWork->register($object);
-            $unitOfWork->remove($object);
+        foreach ($entities as $entity) {
+            $unitOfWork->register($entity);
+            $unitOfWork->remove($entity);
         }
 
         $unitOfWork->commit();
@@ -119,57 +120,57 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
             $classDefinition
         ]);
 
-        $objects = $this->generateEditedObjects(41);
-        $originObjects = [];
+        $entities = $this->generateEditedObjects(41);
+        $originEntities = [];
 
-        foreach ($objects as $object) {
-            $originObjects[] = clone($object);
-            $unitOfWork->register($object);
-            $object->changeFirstName("New");
-            $object->changeLastName("Name");
+        foreach ($entities as $entity) {
+            $originEntities[] = clone($entity);
+            $unitOfWork->register($entity);
+            $entity->changeFirstName("New");
+            $entity->changeLastName("Name");
         }
 
         $unitOfWork->commit();
 
-        foreach ($objects as $index => $object) {
-            $this->assertEquals($object, $originObjects[$index]);
+        foreach ($entities as $index => $entity) {
+            $this->assertEquals($entity, $originEntities[$index]);
         }
 
         $this->assertSame(1, $classDefinition->getEditCommandHandler()->getHandledBatchesCount());
         $this->assertSame(10, $classDefinition->getEditCommandHandler()->getTotalHandledCommandsCount());
     }
 
-    private function generateNewObjects($count = 10)
+    private function generateNewEntities($count = 10)
     {
-        $objects = [];
+        $entities = [];
         $faker = Factory::create();
         for ($i = 0; $i < $count; $i++) {
-            $objects[] = new EntityFake(null, $faker->firstName, $faker->lastName);
+            $entities[] = new EntityFake(null, $faker->firstName, $faker->lastName);
         }
 
-        return $objects;
+        return $entities;
     }
 
     private function generateEditedObjects($count = 10)
     {
-        $objects = [];
+        $entities = [];
         $faker = Factory::create();
         for ($i = 0; $i < $count; $i++) {
-            $objects[] = new EntityFake($faker->numberBetween(1, 10000), "Name", "Old");
+            $entities[] = new EntityFake($faker->numberBetween(1, 10000), "Name", "Old");
         }
 
-        return $objects;
+        return $entities;
     }
 
     /**
-     * @return Definition
+     * @return \Isolate\UnitOfWork\Entity\ClassDefinition
      */
     private function createClassDefinition()
     {
-        return new Definition(
-            EntityFake::getClassName(),
+        return new ClassDefinition(
+            new ClassName(EntityFake::getClassName()),
             new IdDefinition("id"),
-            ["firstName", "lastName"]
+            ["firstName", "lastName", "items"]
         );
     }
 
@@ -179,6 +180,6 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork(array $classDefinitions = [])
     {
-        return new UnitOfWork(new ObjectInformationPoint($classDefinitions), $this->eventDispatcher);
+        return new UnitOfWork(new InformationPoint($classDefinitions), $this->eventDispatcher);
     }
 }

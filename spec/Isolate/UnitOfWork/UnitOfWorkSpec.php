@@ -2,36 +2,31 @@
 
 namespace spec\Isolate\UnitOfWork;
 
+use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\IdDefinition;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\ObjectStates;
-use Isolate\UnitOfWork\ObjectInformationPoint;
-use Isolate\UnitOfWork\Tests\Double\EditablePersistedEntityStub;
-use Isolate\UnitOfWork\Tests\Double\NotPersistedEntityStub;
-use Isolate\UnitOfWork\Tests\Double\PersistedEntityStub;
+use Isolate\UnitOfWork\EntityStates;
+use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkSpec extends ObjectBehavior
 {
-
-    function let(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
+    function let(EventDispatcher $eventDispatcher)
     {
-        $objectInformationPoint->isPersisted(Argument::type("Isolate\\UnitOfWork\\Tests\\Double\\NotPersistedEntityStub"))
-            ->willReturn(false);
-        $objectInformationPoint->isPersisted(Argument::type("Isolate\\UnitOfWork\\Tests\\Double\\PersistedEntityStub"))
-            ->willReturn(true);
-        $objectInformationPoint->isPersisted(Argument::type("Isolate\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub"))
-            ->willReturn(true);
-        $objectInformationPoint->isEqual(
-                Argument::type("Isolate\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub"),
-                Argument::type("Isolate\\UnitOfWork\\Tests\\Double\\EditablePersistedEntityStub")
-            )->willReturn(false);
+        $entityInformationPoint = new InformationPoint([
+            new ClassDefinition(
+                new ClassName("Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
+                new IdDefinition("id"),
+                ["firstName", "lastName", "items"]
+            )
+        ]);
 
-        $objectInformationPoint->isEqual(Argument::any(), Argument::any())->willReturn(true);
-
-        $this->beConstructedWith($objectInformationPoint, $eventDispatcher);
+        $this->beConstructedWith($entityInformationPoint, $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()
@@ -40,59 +35,65 @@ class UnitOfWorkSpec extends ObjectBehavior
             ->during("register", ["Coduo"]);
     }
 
-    function it_should_throw_exception_when_checking_unregistered_object_state()
+    function it_throw_exception_during_non_entity_registration()
+    {
+        $this->shouldThrow(new InvalidArgumentException("Only entities can be registered in Unit of Work."))
+            ->during("register", [new \DateTime()]);
+    }
+
+    function it_should_throw_exception_when_checking_unregistered_entity_state()
     {
         $this->shouldThrow(new RuntimeException("Object need to be registered first in the Unit of Work."))
-            ->during("getObjectState", [new \DateTime]);
+            ->during("getEntityState", [new \DateTime]);
     }
 
-    function it_tells_when_object_was_registered()
+    function it_tells_when_entity_was_registered()
     {
-        $object = new NotPersistedEntityStub();
-        $this->register($object);
-        $this->isRegistered($object)->shouldReturn(true);
+        $entity = new EntityFake();
+        $this->register($entity);
+        $this->isRegistered($entity)->shouldReturn(true);
     }
 
-    function it_should_return_new_state_when_registering_object_is_not_persisted()
+    function it_should_return_new_state_when_registered_entity_was_not_persisted()
     {
-        $object = new NotPersistedEntityStub();
+        $entity = new EntityFake();
 
-        $this->register($object);
+        $this->register($entity);
 
-        $this->getObjectState($object)->shouldReturn(ObjectStates::NEW_OBJECT);
+        $this->getEntityState($entity)->shouldReturn(EntityStates::NEW_ENTITY);
     }
 
-    function it_should_return_persisted_objects_state_when_registering_object_is_persisted()
+    function it_should_return_persisted_entity_state_when_registered_object_was_persisted()
     {
-        $object = new PersistedEntityStub();
+        $entity = new EntityFake(1);
 
-        $this->register($object);
+        $this->register($entity);
 
-        $this->getObjectState($object)->shouldReturn(ObjectStates::PERSISTED_OBJECT);
+        $this->getEntityState($entity)->shouldReturn(EntityStates::PERSISTED_ENTITY);
     }
 
-    function it_should_return_edited_state_when_object_was_modified_after_registration()
+    function it_should_return_edited_state_when_entity_was_modified_after_registration()
     {
-        $object = new EditablePersistedEntityStub();
+        $entity = new EntityFake(1);
 
-        $this->register($object);
+        $this->register($entity);
 
-        $object->changeName("new name");
+        $entity->changeFirstName("new name");
 
-        $this->getObjectState($object)->shouldReturn(ObjectStates::EDITED_OBJECT);
+        $this->getEntityState($entity)->shouldReturn(EntityStates::EDITED_ENTITY);
     }
 
-    function it_should_throw_exception_on_removing_not_persisted_object()
+    function it_should_throw_exception_on_removing_not_persisted_entity()
     {
-        $object = new NotPersistedEntityStub();
-        $this->shouldThrow(new RuntimeException("Unit of Work can't remove not persisted objects."))
-            ->during('remove', [$object]);
+        $entity = new EntityFake();
+        $this->shouldThrow(new RuntimeException("Unit of Work can't remove not persisted entities."))
+            ->during('remove', [$entity]);
     }
 
-    function it_return_removed_state_for_not_registered_but_persisted_object()
+    function it_return_removed_state_for_not_registered_but_persisted_entity()
     {
-        $object = new PersistedEntityStub();
-        $this->remove($object);
-        $this->getObjectState($object)->shouldReturn(ObjectStates::REMOVED_OBJECT);
+        $entity = new EntityFake(1);
+        $this->remove($entity);
+        $this->getEntityState($entity)->shouldReturn(EntityStates::REMOVED_ENTITY);
     }
 }

@@ -7,20 +7,20 @@ use Isolate\UnitOfWork\Command\NewCommandHandler;
 
 class NewCommandHandlerMock implements  NewCommandHandler
 {
-    private $persistedObjects = [];
+    private $persistedEntities = [];
 
     /**
      * @param NewCommand $command
      */
     public function handle(NewCommand $command)
     {
-        $this->persistedObjects[] = $command->getObject();
+        $this->persistedEntities[] = $command->getEntity();
     }
 
-    public function objectWasPersisted($object)
+    public function entityWasPersisted($entity)
     {
-        foreach ($this->persistedObjects as $persistedObject) {
-            if ($persistedObject === $object) {
+        foreach ($this->persistedEntities as $persistedObject) {
+            if ($persistedObject === $entity) {
                 return true;
             }
         }

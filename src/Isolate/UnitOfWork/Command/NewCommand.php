@@ -9,45 +9,45 @@ final class NewCommand
     /**
      * @var mixed
      */
-    private $object;
+    private $entity;
 
     /**
      * @var int
      */
-    private $totalNewObjects;
+    private $totalNewEntities;
 
     /**
-     * @param mixed $object
-     * @param int $totalNewObjects
+     * @param mixed $entity
+     * @param int $totalNewEntities
      * @throws InvalidArgumentException
      */
-    public function __construct($object, $totalNewObjects)
+    public function __construct($entity, $totalNewEntities)
     {
-        if (!is_object($object)) {
-            throw new InvalidArgumentException(sprintf("New command require object \"%s\" type passed.", gettype($object)));
+        if (!is_object($entity)) {
+            throw new InvalidArgumentException(sprintf("New command require object \"%s\" type passed.", gettype($entity)));
         }
 
-        if (!is_integer($totalNewObjects)) {
+        if (!is_integer($totalNewEntities)) {
             throw new InvalidArgumentException(sprintf("Total new objects count must be valid integer."));
         }
 
-        $this->object = $object;
-        $this->totalNewObjects = $totalNewObjects;
+        $this->entity = $entity;
+        $this->totalNewEntities = $totalNewEntities;
     }
 
     /**
      * @return mixed
      */
-    public function getObject()
+    public function getEntity()
     {
-        return $this->object;
+        return $this->entity;
     }
 
     /**
      * @return int
      */
-    public function getTotalNewObjects()
+    public function getTotalNewEntities()
     {
-        return $this->totalNewObjects;
+        return $this->totalNewEntities;
     }
 }

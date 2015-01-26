@@ -1,9 +1,9 @@
 <?php
 
-namespace Isolate\UnitOfWork\Cloner\Adapter\DeepCopy;
+namespace Isolate\UnitOfWork\Value\Cloner\Adapter\DeepCopy;
 
 use DeepCopy\DeepCopy;
-use Isolate\UnitOfWork\Cloner as BaseCloner;
+use Isolate\UnitOfWork\Value\Cloner as BaseCloner;
 
 class Cloner implements BaseCloner
 {

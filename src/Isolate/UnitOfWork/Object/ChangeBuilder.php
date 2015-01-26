@@ -1,11 +1,11 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Object;
 
+use Isolate\UnitOfWork\Change;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\Object\PropertyAccessor;
 
 final class ChangeBuilder
 {

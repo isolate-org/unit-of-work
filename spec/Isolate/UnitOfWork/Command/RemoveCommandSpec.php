@@ -3,17 +3,17 @@
 namespace spec\Isolate\UnitOfWork\Command;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
-use Isolate\UnitOfWork\Tests\Double\NotPersistedEntityStub;
+use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
 class RemoveCommandSpec extends ObjectBehavior
 {
-    function it_has_object_that_should_be_persisted()
+    function it_has_entity_that_should_be_persisted()
     {
-        $object = new NotPersistedEntityStub();
-        $this->beConstructedWith($object, 1);
-        $this->getObject()->shouldReturn($object);
+        $entity = new EntityFake();
+        $this->beConstructedWith($entity, 1);
+        $this->getEntity()->shouldReturn($entity);
     }
 
     function it_throws_exception_when_created_for_not_a_object_value()

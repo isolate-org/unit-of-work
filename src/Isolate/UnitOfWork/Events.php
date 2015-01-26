@@ -8,9 +8,9 @@ final class Events
 
     const POST_COMMIT = 'isolate.unit_of_work.post_commit';
 
-    const PRE_REGISTER_OBJECT = 'isolate.unit_of_work.pre_register_object';
+    const PRE_REGISTER_ENTITY = 'isolate.unit_of_work.pre_register_entity';
 
-    const PRE_GET_OBJECT_STATE = 'isolate.unit_of_work.pre_get_object_state';
+    const PRE_GET_ENTITY_STATE = 'isolate.unit_of_work.pre_get_entity_state';
 
-    const PRE_REMOVE_OBJECT = 'isolate.unit_of_work.pre_remove_object';
+    const PRE_REMOVE_ENTITY = 'isolate.unit_of_work.pre_remove_entity';
 }

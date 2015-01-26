@@ -7,20 +7,20 @@ use Isolate\UnitOfWork\Command\RemoveCommandHandler;
 
 class RemoveCommandHandlerMock implements RemoveCommandHandler
 {
-    private $persistedObjects = [];
+    private $removedEntities = [];
 
     /**
      * @param RemoveCommand $command
      */
     public function handle(RemoveCommand $command)
     {
-        $this->persistedObjects[] = $command->getObject();
+        $this->removedEntities[] = $command->getEntity();
     }
 
-    public function objectWasPersisted($object)
+    public function entityWasRemoved($entity)
     {
-        foreach ($this->persistedObjects as $persistedObject) {
-            if ($persistedObject === $object) {
+        foreach ($this->removedEntities as $persistedObject) {
+            if ($persistedObject === $entity) {
                 return true;
             }
         }

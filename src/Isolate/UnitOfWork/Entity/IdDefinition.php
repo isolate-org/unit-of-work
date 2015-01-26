@@ -1,6 +1,6 @@
 <?php
 
-namespace Isolate\UnitOfWork\ObjectClass;
+namespace Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 

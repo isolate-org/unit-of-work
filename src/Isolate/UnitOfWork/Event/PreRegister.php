@@ -6,13 +6,13 @@ use Symfony\Component\EventDispatcher\Event;
 
 class PreRegister extends Event
 {
-    use ObjectEvent;
+    use EntityEvent;
 
     /**
-     * @param $object
+     * @param $entity
      */
-    public function __construct($object)
+    public function __construct($entity)
     {
-        $this->object = $object;
+        $this->entity = $entity;
     }
 }

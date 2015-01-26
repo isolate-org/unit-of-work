@@ -2,7 +2,8 @@
 
 namespace Isolate\UnitOfWork;
 
-use Isolate\UnitOfWork\Cloner\Adapter\DeepCopy\Cloner;
+use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Value\Cloner\Adapter\DeepCopy\Cloner;
 use Isolate\UnitOfWork\Command\EditCommand;
 use Isolate\UnitOfWork\Command\NewCommand;
 use Isolate\UnitOfWork\Command\RemoveCommand;
@@ -12,15 +13,16 @@ use Isolate\UnitOfWork\Event\PreRegister;
 use Isolate\UnitOfWork\Event\PreRemove;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\ObjectClass\Definition;
+use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Entity\ClassDefinition;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWork
 {
     /**
-     * @var ObjectInformationPoint
+     * @var InformationPoint
      */
-    private $objectInformationPoint;
+    private $entityInformationPoint;
 
     /**
      * @var Cloner
@@ -30,37 +32,37 @@ class UnitOfWork
     /**
      * @var array
      */
-    private $removedObjects;
+    private $removedEntities;
 
     /**
      * @var array
      */
-    private $objects;
+    private $entities;
 
     /**
      * @var array
      */
-    private $originObjects;
+    private $originEntities;
 
     /**
-     * @var ObjectRecovery
+     * @var RecoveryPoint
      */
-    private $objectRecovery;
-
-    /**
-     * @var int
-     */
-    private $totalNewObjects;
+    private $objectRecoveryPoint;
 
     /**
      * @var int
      */
-    private $totalEditedObjects;
+    private $totalNewEntities;
 
     /**
      * @var int
      */
-    private $totalRemovedObjects;
+    private $totalEditedEntities;
+
+    /**
+     * @var int
+     */
+    private $totalRemovedEntities;
 
     /**
      * @var EventDispatcher
@@ -68,137 +70,141 @@ class UnitOfWork
     private $eventDispatcher;
 
     /**
-     * @param ObjectInformationPoint $objectInformationPoint
+     * @param InformationPoint $entityInformationPoint
      * @param EventDispatcher $eventDispatcher
      */
-    public function __construct(ObjectInformationPoint $objectInformationPoint, EventDispatcher $eventDispatcher)
+    public function __construct(InformationPoint $entityInformationPoint, EventDispatcher $eventDispatcher)
     {
-        $this->objectInformationPoint = $objectInformationPoint;
-        $this->removedObjects = [];
-        $this->objects = [];
-        $this->originObjects = [];
-        $this->objectRecovery = new ObjectRecovery();
+        $this->entityInformationPoint = $entityInformationPoint;
+        $this->removedEntities = [];
+        $this->entities = [];
+        $this->originEntities = [];
+        $this->objectRecoveryPoint = new RecoveryPoint();
         $this->cloner = new Cloner();
-        $this->totalNewObjects = 0;
-        $this->totalEditedObjects = 0;
-        $this->totalRemovedObjects = 0;
+        $this->totalNewEntities = 0;
+        $this->totalEditedEntities = 0;
+        $this->totalRemovedEntities = 0;
         $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    public function register($object)
+    public function register($entity)
     {
-        if (!is_object($object)) {
+        if (!is_object($entity)) {
             throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
         }
 
-        $event = new PreRegister($object);
-        $this->eventDispatcher->dispatch(Events::PRE_REGISTER_OBJECT, $event);
-        $object = $event->getObject();
+        if (!$this->entityInformationPoint->hasDefinition($entity)) {
+            throw new InvalidArgumentException("Only entities can be registered in Unit of Work.");
+        }
 
-        $hash = spl_object_hash($object);
+        $event = new PreRegister($entity);
+        $this->eventDispatcher->dispatch(Events::PRE_REGISTER_ENTITY, $event);
+        $entity = $event->getEntity();
 
-        $this->objects[$hash] = $object;
-        $this->originObjects[$hash] = $this->cloner->cloneValue($object);
+        $hash = spl_object_hash($entity);
+
+        $this->entities[$hash] = $entity;
+        $this->originEntities[$hash] = $this->cloner->cloneValue($entity);
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @return bool
      */
-    public function isRegistered($object)
+    public function isRegistered($entity)
     {
-        return array_key_exists(spl_object_hash($object), $this->objects);
+        return array_key_exists(spl_object_hash($entity), $this->entities);
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @return int
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    public function getObjectState($object)
+    public function getEntityState($entity)
     {
-        if (!is_object($object)) {
+        if (!is_object($entity)) {
             throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
         }
 
-        $event = new PreGetState($object);
-        $this->eventDispatcher->dispatch(Events::PRE_GET_OBJECT_STATE, $event);
-        $object = $event->getObject();
+        $event = new PreGetState($entity);
+        $this->eventDispatcher->dispatch(Events::PRE_GET_ENTITY_STATE, $event);
+        $entity = $event->getEntity();
 
-        if (!$this->isRegistered($object)) {
+        if (!$this->isRegistered($entity)) {
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (array_key_exists(spl_object_hash($object), $this->removedObjects)) {
-            return ObjectStates::REMOVED_OBJECT;
+        if (array_key_exists(spl_object_hash($entity), $this->removedEntities)) {
+            return EntityStates::REMOVED_ENTITY;
         }
 
-        if (!$this->objectInformationPoint->isPersisted($object)) {
-            return ObjectStates::NEW_OBJECT;
+        if (!$this->entityInformationPoint->isPersisted($entity)) {
+            return EntityStates::NEW_ENTITY;
         }
 
-        if (!$this->objectInformationPoint->isEqual($object, $this->originObjects[spl_object_hash($object)])) {
-            return ObjectStates::EDITED_OBJECT;
+        if (!$this->entityInformationPoint->areEqual($entity, $this->originEntities[spl_object_hash($entity)])) {
+            return EntityStates::EDITED_ENTITY;
         }
 
-        return ObjectStates::PERSISTED_OBJECT;
+        return EntityStates::PERSISTED_ENTITY;
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @throws Exception\InvalidPropertyPathException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    public function remove($object)
+    public function remove($entity)
     {
-        if (!is_object($object)) {
+        if (!is_object($entity)) {
             throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
         }
 
-        $event = new PreRemove($object);
-        $this->eventDispatcher->dispatch(Events::PRE_REMOVE_OBJECT, $event);
-        $object = $event->getObject();
+        $event = new PreRemove($entity);
+        $this->eventDispatcher->dispatch(Events::PRE_REMOVE_ENTITY, $event);
+        $entity = $event->getEntity();
 
-        if (!$this->isRegistered($object)) {
-            if (!$this->objectInformationPoint->isPersisted($object)) {
-                throw new RuntimeException("Unit of Work can't remove not persisted objects.");
+        if (!$this->isRegistered($entity)) {
+            if (!$this->entityInformationPoint->isPersisted($entity)) {
+                throw new RuntimeException("Unit of Work can't remove not persisted entities.");
             }
 
-            $this->register($object);
+            $this->register($entity);
         }
 
-        $this->removedObjects[spl_object_hash($object)] = $object;
+        $this->removedEntities[spl_object_hash($entity)] = $entity;
     }
 
     public function commit()
     {
-        $removedObjectHashes = [];
-        $this->countObjects();
+        $removedEntitiesHashes = [];
+        $this->countEntities();
 
         $this->eventDispatcher->dispatch(Events::PRE_COMMIT);
 
-        foreach ($this->objects as $objectHash => $object) {
-            $originObject = $this->originObjects[$objectHash];
-            $objectClassDefinition = $this->objectInformationPoint->getDefinition($object);
+        foreach ($this->entities as $entityHash => $entity) {
+            $originEntity = $this->originEntities[$entityHash];
+            $entityClassDefinition = $this->entityInformationPoint->getDefinition($entity);
 
             $commandResult = null;
-            switch($this->getObjectState($object)) {
-                case ObjectStates::NEW_OBJECT:
-                    $commandResult = $this->handleNewObject($objectClassDefinition, $object);
+            switch($this->getEntityState($entity)) {
+                case EntityStates::NEW_ENTITY:
+                    $commandResult = $this->handleNewObject($entityClassDefinition, $entity);
                     break;
-                case ObjectStates::EDITED_OBJECT:
-                    $commandResult = $this->handleEditedObject($objectClassDefinition, $object, $originObject);
+                case EntityStates::EDITED_ENTITY:
+                    $commandResult = $this->handleEditedObject($entityClassDefinition, $entity, $originEntity);
                     break;
-                case ObjectStates::REMOVED_OBJECT:
-                    $removedObjectHashes[] = $objectHash;
-                    $commandResult = $this->handleRemovedObject($objectClassDefinition, $object);
+                case EntityStates::REMOVED_ENTITY:
+                    $removedEntitiesHashes[] = $entityHash;
+                    $commandResult = $this->handleRemovedObject($entityClassDefinition, $entity);
                     break;
             }
 
@@ -209,105 +215,105 @@ class UnitOfWork
             }
         }
 
-        $this->unregisterObjects($removedObjectHashes);
-        $this->updateObjectsAndStates();
+        $this->unregisterEntities($removedEntitiesHashes);
+        $this->updateEntitiesStates();
 
         $this->eventDispatcher->dispatch(Events::POST_COMMIT, new PostCommit());
-        unset($removedObjectHashes);
+        unset($removedEntitiesHashes);
     }
 
     public function rollback()
     {
-        foreach ($this->originObjects as $hash => $originObject) {
-            $this->objectRecovery->recover($this->objects[$hash], $originObject);
+        foreach ($this->originEntities as $hash => $originEntity) {
+            $this->objectRecoveryPoint->recover($this->entities[$hash], $originEntity);
         }
 
-        $this->removedObjects = [];
+        $this->removedEntities = [];
     }
 
     /**
-     * @param $objectClassDefinition
-     * @param $object
+     * @param $entityClassDefinition
+     * @param $entity
      */
-    private function handleNewObject(Definition $objectClassDefinition, $object)
+    private function handleNewObject(ClassDefinition $entityClassDefinition, $entity)
     {
-        if ($objectClassDefinition->hasNewCommandHandler()) {
-            return $objectClassDefinition->getNewCommandHandler()->handle(
-                new NewCommand($object, $this->totalNewObjects)
+        if ($entityClassDefinition->hasNewCommandHandler()) {
+            return $entityClassDefinition->getNewCommandHandler()->handle(
+                new NewCommand($entity, $this->totalNewEntities)
             );
         }
     }
 
     /**
-     * @param $objectClassDefinition
-     * @param $object
-     * @param $originObject
+     * @param $entityClassDefinition
+     * @param $entity
+     * @param $originEntity
      * @throws RuntimeException
      */
-    private function handleEditedObject(Definition $objectClassDefinition, $object, $originObject)
+    private function handleEditedObject(ClassDefinition $entityClassDefinition, $entity, $originEntity)
     {
-        if ($objectClassDefinition->hasEditCommandHandler()) {
-            return $objectClassDefinition->getEditCommandHandler()
+        if ($entityClassDefinition->hasEditCommandHandler()) {
+            return $entityClassDefinition->getEditCommandHandler()
                 ->handle(new EditCommand(
-                    $object,
-                    $this->objectInformationPoint->getChanges(
-                        $originObject,
-                        $object
+                    $entity,
+                    $this->entityInformationPoint->getChanges(
+                        $originEntity,
+                        $entity
                     ),
-                    $this->totalEditedObjects
+                    $this->totalEditedEntities
                 ));
         }
     }
 
     /**
-     * @param $objectClassDefinition
-     * @param $object
+     * @param $entityClassDefinition
+     * @param $entity
      * @throws RuntimeException
      */
-    private function handleRemovedObject(Definition $objectClassDefinition, $object)
+    private function handleRemovedObject(ClassDefinition $entityClassDefinition, $entity)
     {
-        if ($objectClassDefinition->hasRemoveCommandHandler()) {
-            return $objectClassDefinition->getRemoveCommandHandler()
-                ->handle(new RemoveCommand($object, $this->totalRemovedObjects));
+        if ($entityClassDefinition->hasRemoveCommandHandler()) {
+            return $entityClassDefinition->getRemoveCommandHandler()
+                ->handle(new RemoveCommand($entity, $this->totalRemovedEntities));
         }
     }
 
     /**
-     * @param $removedObjectHashes
+     * @param $removedEntitiesHashes
      */
-    private function unregisterObjects($removedObjectHashes)
+    private function unregisterEntities($removedEntitiesHashes)
     {
-        foreach ($removedObjectHashes as $hash) {
-            unset($this->removedObjects[$hash]);
-            unset($this->objects[$hash]);
-            unset($this->originObjects[$hash]);
+        foreach ($removedEntitiesHashes as $hash) {
+            unset($this->removedEntities[$hash]);
+            unset($this->entities[$hash]);
+            unset($this->originEntities[$hash]);
         }
     }
 
-    private function updateObjectsAndStates()
+    private function updateEntitiesStates()
     {
-        foreach ($this->objects as $objectHash => $object) {
-            $this->originObjects[$objectHash] = $object;
-            $this->removedObjects[$objectHash] = ObjectStates::PERSISTED_OBJECT;
+        foreach ($this->entities as $entityHash => $entity) {
+            $this->originEntities[$entityHash] = $entity;
+            $this->removedEntities[$entityHash] = EntityStates::PERSISTED_ENTITY;
         }
     }
 
-    private function countObjects()
+    private function countEntities()
     {
-        $this->totalNewObjects = 0;
-        $this->totalEditedObjects = 0;
-        $this->totalRemovedObjects = 0;
+        $this->totalNewEntities = 0;
+        $this->totalEditedEntities = 0;
+        $this->totalRemovedEntities = 0;
 
-        foreach ($this->objects as $object) {
-            switch($this->getObjectState($object)) {
-                case ObjectStates::NEW_OBJECT:
-                    $this->totalNewObjects++;
+        foreach ($this->entities as $entity) {
+            switch($this->getEntityState($entity)) {
+                case EntityStates::NEW_ENTITY:
+                    $this->totalNewEntities++;
                     break;
-                case ObjectStates::EDITED_OBJECT:
-                    $this->totalEditedObjects++;
+                case EntityStates::EDITED_ENTITY:
+                    $this->totalEditedEntities++;
                     break;
-                case ObjectStates::REMOVED_OBJECT:
-                    $this->totalRemovedObjects++;
+                case EntityStates::REMOVED_ENTITY:
+                    $this->totalRemovedEntities++;
                     break;
             }
         }
