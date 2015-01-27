@@ -9,7 +9,7 @@ final class RemoveCommand
     /**
      * @var mixed
      */
-    private $object;
+    private $entity;
 
     /**
      * @var int
@@ -17,30 +17,30 @@ final class RemoveCommand
     private $totalRemovedObjects;
 
     /**
-     * @param mixed $object
-     * @param int $totalRemovedObjects
+     * @param mixed $entity
+     * @param int $totalRemovedEntities
      * @throws InvalidArgumentException
      */
-    public function __construct($object, $totalRemovedObjects)
+    public function __construct($entity, $totalRemovedEntities)
     {
-        if (!is_object($object)) {
-            throw new InvalidArgumentException(sprintf("Remove command require object \"%s\" type passed.", gettype($object)));
+        if (!is_object($entity)) {
+            throw new InvalidArgumentException(sprintf("Remove command require object \"%s\" type passed.", gettype($entity)));
         }
 
-        if (!is_integer($totalRemovedObjects)) {
+        if (!is_integer($totalRemovedEntities)) {
             throw new InvalidArgumentException(sprintf("Total removed objects count must be valid integer."));
         }
 
-        $this->object = $object;
-        $this->totalRemovedObjects = $totalRemovedObjects;
+        $this->entity = $entity;
+        $this->totalRemovedObjects = $totalRemovedEntities;
     }
 
     /**
      * @return mixed
      */
-    public function getObject()
+    public function getEntity()
     {
-        return $this->object;
+        return $this->entity;
     }
 
     /**

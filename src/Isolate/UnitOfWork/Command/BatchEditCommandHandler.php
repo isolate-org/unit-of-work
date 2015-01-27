@@ -27,7 +27,7 @@ abstract class BatchEditCommandHandler implements EditCommandHandler
 
         $this->addCommandToBatch($command);
 
-        if ($command->getTotalEditedObjects() === ($this->getHandledCommandsCount() + $this->getBatchSize())) {
+        if ($command->getTotalEditedEntities() === ($this->getHandledCommandsCount() + $this->getBatchSize())) {
             $result = $this->handleBatch($this->getBatch());
             $this->increaseHandledCommands();
 

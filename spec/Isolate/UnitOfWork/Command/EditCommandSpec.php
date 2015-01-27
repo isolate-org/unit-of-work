@@ -13,10 +13,10 @@ class EditCommandSpec extends ObjectBehavior
 {
     function it_has_object_that_should_be_persisted()
     {
-        $object = new EntityFake(1, "Norbert", "Orzechowicz");
+        $entity = new EntityFake(1, "Norbert", "Orzechowicz");
         $changes = new ChangeSet([new Change("Norbert", "Michal", "firstName")]);
-        $this->beConstructedWith($object, $changes, 1);
-        $this->getObject()->shouldReturn($object);
+        $this->beConstructedWith($entity, $changes, 1);
+        $this->getEntity()->shouldReturn($entity);
         $this->getChanges()->shouldReturn($changes);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork\ObjectClass;
+namespace spec\Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use PhpSpec\ObjectBehavior;

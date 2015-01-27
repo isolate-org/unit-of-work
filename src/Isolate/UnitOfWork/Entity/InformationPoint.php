@@ -1,15 +1,16 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Entity;
 
+use Isolate\UnitOfWork\Object\ChangeBuilder;
+use Isolate\UnitOfWork\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\ObjectClass\Definition;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
-class ObjectInformationPoint
+class InformationPoint
 {
     /**
      * @var ChangeBuilder
@@ -17,22 +18,22 @@ class ObjectInformationPoint
     private $changeBuilder;
 
     /**
-     * @var array|Definition[]
+     * @var array|ClassDefinition[]
      */
-    private $classDefinitions;
+    private $entityDefinitions;
 
     /**
-     * @param array $classDefinitions
+     * @param array $entityDefinitions
      * @throws InvalidArgumentException
      */
-    public function __construct($classDefinitions = [])
+    public function __construct($entityDefinitions = [])
     {
-        if (!is_array($classDefinitions) && !$classDefinitions instanceof \Traversable) {
+        if (!is_array($entityDefinitions) && !$entityDefinitions instanceof \Traversable) {
             throw new InvalidArgumentException("Class definitions collection must be traversable.");
         }
 
-        foreach ($classDefinitions as $definition) {
-            if (!$definition instanceof Definition) {
+        foreach ($entityDefinitions as $definition) {
+            if (!$definition instanceof ClassDefinition) {
                 throw new InvalidArgumentException(
                     "Each element of class definitions collection must be an instance of \\Isolate\\UnitOfWork\\ClassDefinition."
                 );
@@ -40,27 +41,27 @@ class ObjectInformationPoint
         }
 
         $this->changeBuilder = new ChangeBuilder();
-        $this->classDefinitions = $classDefinitions;
+        $this->entityDefinitions = $entityDefinitions;
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @return bool
      * @throws InvalidPropertyPathException
      */
-    public function isPersisted($object)
+    public function isPersisted($entity)
     {
-        $this->validateObject($object);
+        $this->validateObject($entity);
         $propertyAccessor = new PropertyAccessor(false, true);
-        $classDefinition = $this->getDefinition($object);
-        $idPropertyPath = $classDefinition->getIdDefinition()->getPropertyPath();
+        $entityDefinition = $this->getDefinition($entity);
+        $idPropertyPath = $entityDefinition->getIdDefinition()->getPropertyPath();
 
         try {
-            $identity = $propertyAccessor->getValue($object, $idPropertyPath);
+            $identity = $propertyAccessor->getValue($entity, $idPropertyPath);
         } catch (NoSuchPropertyException $exception) {
             throw new InvalidPropertyPathException(sprintf(
                 "Cant access identifier in \"%s\" using \"%s\" property path.",
-                $classDefinition->getClassName(),
+                $entityDefinition->getClassName(),
                 $idPropertyPath
             ));
         }
@@ -69,14 +70,14 @@ class ObjectInformationPoint
     }
 
     /**
-     * @param $firstObject
-     * @param $secondObject
+     * @param $firstEntity
+     * @param $secondEntity
      * @return bool
      */
-    public function isEqual($firstObject, $secondObject)
+    public function areEqual($firstEntity, $secondEntity)
     {
-        foreach ($this->getDefinition($firstObject)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $property)) {
+        foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
+            if ($this->changeBuilder->isDifferent($firstEntity, $secondEntity, $property)) {
                 return false;
             }
         }
@@ -85,22 +86,22 @@ class ObjectInformationPoint
     }
 
     /**
-     * @param $firstObject
-     * @param $secondObject
+     * @param $firstEntity
+     * @param $secondEntity
      * @return ChangeSet
      * @throws InvalidPropertyPathException
      * @throws RuntimeException
      */
-    public function getChanges($firstObject, $secondObject)
+    public function getChanges($firstEntity, $secondEntity)
     {
-        if ($this->isEqual($firstObject, $secondObject)) {
+        if ($this->areEqual($firstEntity, $secondEntity)) {
             throw new RuntimeException("Objects are equal.");
         }
 
         $changes = [];
-        foreach ($this->getDefinition($firstObject)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($firstObject, $secondObject, $property)) {
-                $changes[] = $this->changeBuilder->buildChange($firstObject, $secondObject, $property);
+        foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
+            if ($this->changeBuilder->isDifferent($firstEntity, $secondEntity, $property)) {
+                $changes[] = $this->changeBuilder->buildChange($firstEntity, $secondEntity, $property);
             }
         }
 
@@ -120,29 +121,29 @@ class ObjectInformationPoint
 
 
     /**
-     * @param $object
-     * @return Definition
+     * @param $entity
+     * @return ClassDefinition
      * @throws RuntimeException
      */
-    public function getDefinition($object)
+    public function getDefinition($entity)
     {
-        foreach ($this->classDefinitions as $definition) {
-            if ($definition->fitsFor($object)) {
+        foreach ($this->entityDefinitions as $definition) {
+            if ($definition->fitsFor($entity)) {
                 return $definition;
             }
         }
 
-        throw new RuntimeException(sprintf("Class \"%s\" does not have definition.", get_class($object)));
+        throw new RuntimeException(sprintf("Class \"%s\" does not have definition.", get_class($entity)));
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @return bool
      */
-    private function hasDefinition($object)
+    public function hasDefinition($entity)
     {
-        foreach ($this->classDefinitions as $definition) {
-            if ($definition->fitsFor($object)) {
+        foreach ($this->entityDefinitions as $definition) {
+            if ($definition->fitsFor($entity)) {
                 return true;
             }
         }

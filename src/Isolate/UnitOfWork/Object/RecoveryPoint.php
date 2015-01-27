@@ -1,11 +1,11 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Object;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Object\PropertyAccessor;
 
-class ObjectRecovery
+class RecoveryPoint
 {
     /**
      * @var PropertyAccessor

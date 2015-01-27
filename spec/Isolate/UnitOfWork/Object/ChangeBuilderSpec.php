@@ -1,12 +1,12 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork;
+namespace spec\Isolate\UnitOfWork\Object;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
-use Isolate\UnitOfWork\Tests\Double\PersistedEntityStub;
+use Isolate\UnitOfWork\Tests\Double\ProtectedEntity;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
@@ -39,7 +39,7 @@ class ChangeBuilderSpec extends ObjectBehavior
     function it_throws_exception_when_compared_objects_have_different_classes()
     {
         $this->shouldThrow(new InvalidArgumentException("Compared values need to be an instances of the same class."))
-            ->during("isDifferent", [new PersistedEntityStub(), new EntityFake(), "firstName"]);
+            ->during("isDifferent", [new ProtectedEntity(), new EntityFake(), "firstName"]);
 
     }
 

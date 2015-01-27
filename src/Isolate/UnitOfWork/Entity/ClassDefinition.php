@@ -1,15 +1,14 @@
 <?php
 
-namespace Isolate\UnitOfWork\ObjectClass;
+namespace Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Command\EditCommandHandler;
 use Isolate\UnitOfWork\Command\NewCommandHandler;
 use Isolate\UnitOfWork\Command\RemoveCommandHandler;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
-use Isolate\UnitOfWork\ObjectClass\IdDefinition;
 
-class Definition
+class ClassDefinition
 {
     /**
      * @var string
@@ -42,22 +41,14 @@ class Definition
     private $observedProperties;
 
     /**
-     * @param string $className
+     * @param ClassName $className
      * @param IdDefinition $idDefinition
      * @param $observedProperties
      * @throws InvalidArgumentException
      */
-    public function __construct($className, IdDefinition $idDefinition, array $observedProperties)
+    public function __construct(ClassName $className, IdDefinition $idDefinition, array $observedProperties)
     {
-        if (!is_string($className)) {
-            throw new InvalidArgumentException("Class name must be a valid string.");
-        }
-
-        if (!class_exists($className)) {
-            throw new InvalidArgumentException(sprintf("Class \"%s\" does not exists.", $className));
-        }
-
-        $this->validatePropertyPaths($className, $idDefinition, $observedProperties);
+        $this->validatePropertyPaths((string) $className, $idDefinition, $observedProperties);
 
         $this->className = $className;
         $this->idDefinition = $idDefinition;
@@ -65,7 +56,7 @@ class Definition
     }
 
     /**
-     * @return string
+     * @return ClassName
      */
     public function getClassName()
     {
@@ -81,12 +72,12 @@ class Definition
     }
 
     /**
-     * @param $object
+     * @param $entity
      * @return bool
      */
-    public function fitsFor($object)
+    public function fitsFor($entity)
     {
-        return is_a($object, $this->className);
+        return $this->className->isClassOf($entity);
     }
 
     /**

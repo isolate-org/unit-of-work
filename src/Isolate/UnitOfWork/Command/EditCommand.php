@@ -10,7 +10,7 @@ final class EditCommand
     /**
      * @var mixed
      */
-    private $object;
+    private $entity;
 
     /**
      * @var ChangeSet
@@ -20,35 +20,35 @@ final class EditCommand
     /**
      * @var int
      */
-    private $totalEditedObjects;
+    private $totalEditedEntities;
 
     /**
-     * @param mixed $object
+     * @param mixed $entity
      * @param ChangeSet $changeSet
-     * @param int $totalEditedObjects
+     * @param int $totalEditedEntities
      * @throws InvalidArgumentException
      */
-    public function __construct($object, ChangeSet $changeSet, $totalEditedObjects)
+    public function __construct($entity, ChangeSet $changeSet, $totalEditedEntities)
     {
-        if (!is_object($object)) {
-            throw new InvalidArgumentException(sprintf("Edit command require object \"%s\" type passed.", gettype($object)));
+        if (!is_object($entity)) {
+            throw new InvalidArgumentException(sprintf("Edit command require object \"%s\" type passed.", gettype($entity)));
         }
 
-        if (!is_integer($totalEditedObjects)) {
+        if (!is_integer($totalEditedEntities)) {
             throw new InvalidArgumentException(sprintf("Total edited objects count must be valid integer."));
         }
 
-        $this->object = $object;
+        $this->entity = $entity;
         $this->changeSet = $changeSet;
-        $this->totalEditedObjects = $totalEditedObjects;
+        $this->totalEditedEntities = $totalEditedEntities;
     }
 
     /**
      * @return mixed
      */
-    public function getObject()
+    public function getEntity()
     {
-        return $this->object;
+        return $this->entity;
     }
 
     /**
@@ -62,8 +62,8 @@ final class EditCommand
     /**
      * @return int
      */
-    public function getTotalEditedObjects()
+    public function getTotalEditedEntities()
     {
-        return $this->totalEditedObjects;
+        return $this->totalEditedEntities;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Value;
 
 interface Cloner
 {

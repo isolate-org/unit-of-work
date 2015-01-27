@@ -7,23 +7,23 @@ use Isolate\UnitOfWork\Command\EditCommandHandler;
 
 class EditCommandHandlerMock implements EditCommandHandler
 {
-    private $persistedObjects = [];
+    private $persistedEntities = [];
 
-    private $persistedObjectsChanges = [];
+    private $persistedEntitiesChanges = [];
 
     /**
      * @param EditCommand $command
      */
     public function handle(EditCommand $command)
     {
-        $this->persistedObjects[] = $command->getObject();
-        $this->persistedObjectsChanges[] = $command->getChanges();
+        $this->persistedEntities[] = $command->getEntity();
+        $this->persistedEntitiesChanges[] = $command->getChanges();
     }
 
-    public function objectWasPersisted($object)
+    public function entityWasPersisted($entity)
     {
-        foreach ($this->persistedObjects as $persistedObject) {
-            if ($persistedObject === $object) {
+        foreach ($this->persistedEntities as $persistedEntity) {
+            if ($persistedEntity === $entity) {
                 return true;
             }
         }
@@ -31,11 +31,11 @@ class EditCommandHandlerMock implements EditCommandHandler
         return false;
     }
 
-    public function getPersistedObjectChanges($object)
+    public function getPersistedEntityChanges($entity)
     {
-        foreach ($this->persistedObjects as $index => $persistedObject) {
-            if ($persistedObject === $object) {
-                return $this->persistedObjectsChanges[$index];
+        foreach ($this->persistedEntities as $index => $persistedEntity) {
+            if ($persistedEntity === $entity) {
+                return $this->persistedEntitiesChanges[$index];
             }
         }
 

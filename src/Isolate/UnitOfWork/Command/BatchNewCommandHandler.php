@@ -27,7 +27,7 @@ abstract class BatchNewCommandHandler implements NewCommandHandler
 
         $this->addCommandToBatch($command);
 
-        if ($command->getTotalNewObjects() === $this->getHandledCommandsCount() + $this->getBatchSize()) {
+        if ($command->getTotalNewEntities() === $this->getHandledCommandsCount() + $this->getBatchSize()) {
             $result = $this->handleBatch($this->getBatch());
             $this->increaseHandledCommands();
 
