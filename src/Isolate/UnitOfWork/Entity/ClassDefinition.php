@@ -77,7 +77,7 @@ class ClassDefinition
      */
     public function fitsFor($entity)
     {
-        return $this->className->isInstanceOf($entity);
+        return $this->className->isClassOf($entity);
     }
 
     /**
