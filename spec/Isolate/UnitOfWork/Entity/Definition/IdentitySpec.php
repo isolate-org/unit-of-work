@@ -1,12 +1,12 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork\Entity;
+namespace spec\Isolate\UnitOfWork\Entity\Definition;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class IdDefinitionSpec extends ObjectBehavior
+class IdentitySpec extends ObjectBehavior
 {
     function it_throw_exception_if_created_with_non_string_property_path()
     {

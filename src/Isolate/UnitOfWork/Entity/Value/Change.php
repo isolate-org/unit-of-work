@@ -1,6 +1,8 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Entity\Value;
+
+use Isolate\UnitOfWork\Entity\Definition\Property;
 
 final class Change
 {
@@ -15,20 +17,20 @@ final class Change
     private $newValue;
 
     /**
-     * @var string
+     * @var Property
      */
-    private $propertyName;
+    private $property;
 
     /**
+     * @param Property $property
      * @param $originValue
      * @param $newValue
-     * @param string $propertyName
      */
-    public function __construct($originValue, $newValue, $propertyName)
+    public function __construct(Property $property, $originValue, $newValue)
     {
+        $this->property = $property;
         $this->originValue = $originValue;
         $this->newValue = $newValue;
-        $this->propertyName = $propertyName;
     }
 
     /**
@@ -48,11 +50,11 @@ final class Change
     }
 
     /**
-     * @return mixed
+     * @return Property
      */
-    public function getPropertyName()
+    public function getProperty()
     {
-        return $this->propertyName;
+        return $this->property;
     }
 
     /**
@@ -61,6 +63,6 @@ final class Change
      */
     public function isFor($propertyName)
     {
-        return $this->propertyName === $propertyName;
+        return $this->property->getName() === $propertyName;
     }
 }

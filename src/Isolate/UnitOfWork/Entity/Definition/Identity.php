@@ -1,10 +1,10 @@
 <?php
 
-namespace Isolate\UnitOfWork\Entity;
+namespace Isolate\UnitOfWork\Entity\Definition;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
-final class IdDefinition
+final class Identity
 {
     /**
      * @var string

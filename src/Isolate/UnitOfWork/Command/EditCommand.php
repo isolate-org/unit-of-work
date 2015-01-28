@@ -2,7 +2,7 @@
 
 namespace Isolate\UnitOfWork\Command;
 
-use Isolate\UnitOfWork\ChangeSet;
+use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
 final class EditCommand

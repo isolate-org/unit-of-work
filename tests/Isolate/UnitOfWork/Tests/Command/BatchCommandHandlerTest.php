@@ -2,10 +2,11 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
-use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
-use Isolate\UnitOfWork\Entity\IdDefinition;
+use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Tests\Double\BatchEditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchNewCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchRemoveCommandHandlerMock;
@@ -163,15 +164,19 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Isolate\UnitOfWork\Entity\ClassDefinition
+     * @return \Isolate\UnitOfWork\Entity\Definition
      */
     private function createClassDefinition()
     {
-        return new ClassDefinition(
-            new ClassName(EntityFake::getClassName()),
-            new IdDefinition("id"),
-            ["firstName", "lastName", "items"]
+        $definition =  new Definition(new ClassName(EntityFake::getClassName()), new Identity("id"));
+        $definition->setObserved([
+            new Property("firstName"),
+            new Property("lastName"),
+            new Property("items")]
         );
+
+
+        return $definition;
     }
 
     /**

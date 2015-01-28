@@ -2,8 +2,8 @@
 
 namespace Isolate\UnitOfWork\Entity;
 
-use Isolate\UnitOfWork\Object\ChangeBuilder;
-use Isolate\UnitOfWork\ChangeSet;
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
+use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
@@ -18,7 +18,7 @@ class InformationPoint
     private $changeBuilder;
 
     /**
-     * @var array|ClassDefinition[]
+     * @var array|Definition[]
      */
     private $entityDefinitions;
 
@@ -33,7 +33,7 @@ class InformationPoint
         }
 
         foreach ($entityDefinitions as $definition) {
-            if (!$definition instanceof ClassDefinition) {
+            if (!$definition instanceof Definition) {
                 throw new InvalidArgumentException(
                     "Each element of class definitions collection must be an instance of \\Isolate\\UnitOfWork\\ClassDefinition."
                 );
@@ -77,7 +77,7 @@ class InformationPoint
     public function areEqual($firstEntity, $secondEntity)
     {
         foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($firstEntity, $secondEntity, $property)) {
+            if ($this->changeBuilder->isDifferent($property, $firstEntity, $secondEntity)) {
                 return false;
             }
         }
@@ -88,7 +88,7 @@ class InformationPoint
     /**
      * @param $firstEntity
      * @param $secondEntity
-     * @return ChangeSet
+     * @return \Isolate\UnitOfWork\Value\\Isolate\UnitOfWork\Entity\Value\ChangeSet
      * @throws InvalidPropertyPathException
      * @throws RuntimeException
      */
@@ -100,8 +100,8 @@ class InformationPoint
 
         $changes = [];
         foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($firstEntity, $secondEntity, $property)) {
-                $changes[] = $this->changeBuilder->buildChange($firstEntity, $secondEntity, $property);
+            if ($this->changeBuilder->isDifferent($property, $firstEntity, $secondEntity)) {
+                $changes[] = $this->changeBuilder->buildChange($property, $firstEntity, $secondEntity);
             }
         }
 
@@ -122,7 +122,7 @@ class InformationPoint
 
     /**
      * @param $entity
-     * @return ClassDefinition
+     * @return Definition
      * @throws RuntimeException
      */
     public function getDefinition($entity)

@@ -1,8 +1,9 @@
 <?php
 
-namespace Isolate\UnitOfWork;
+namespace Isolate\UnitOfWork\Entity\Value;
 
 use Isolate\UnitOfWork\Exception\RuntimeException;
+use Isolate\UnitOfWork\Entity\Value\Change;
 
 class ChangeSet extends \ArrayObject
 {
@@ -13,7 +14,7 @@ class ChangeSet extends \ArrayObject
     public function hasChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
-            /* @var Change $change */
+            /* @var \Isolate\UnitOfWork\Entity\Value\Change $change */
             if ($change->isFor($propertyName)) {
                 return true;
             }

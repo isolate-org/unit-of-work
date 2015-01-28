@@ -2,8 +2,9 @@
 
 namespace spec\Isolate\UnitOfWork\Command;
 
-use Isolate\UnitOfWork\Change;
-use Isolate\UnitOfWork\ChangeSet;
+use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\Value\ChangeSet;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
@@ -14,7 +15,7 @@ class EditCommandSpec extends ObjectBehavior
     function it_has_object_that_should_be_persisted()
     {
         $entity = new EntityFake(1, "Norbert", "Orzechowicz");
-        $changes = new ChangeSet([new Change("Norbert", "Michal", "firstName")]);
+        $changes = new ChangeSet([new Change(new Property("firstName"), "Norbert", "Michal")]);
         $this->beConstructedWith($entity, $changes, 1);
         $this->getEntity()->shouldReturn($entity);
         $this->getChanges()->shouldReturn($changes);

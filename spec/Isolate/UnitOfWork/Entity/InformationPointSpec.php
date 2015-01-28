@@ -2,13 +2,15 @@
 
 namespace spec\Isolate\UnitOfWork\Entity;
 
-use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\Entity\IdDefinition;
+use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
+use Isolate\UnitOfWork\Tests\Double\EntityFakeChild;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
@@ -42,10 +44,9 @@ class InformationPointSpec extends ObjectBehavior
     function it_tells_that_entity_is_persisted_when_it_has_not_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                []
+            new Definition(
+                new ClassName(EntityFake::getClassName()),
+                new Definition\Identity("id")
             )
         ]);
 
@@ -56,10 +57,9 @@ class InformationPointSpec extends ObjectBehavior
     function it_tells_that_entity_is_persisted_when_it_has_identity_equal_to_zero()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                []
+            new Definition(
+                new ClassName(EntityFake::getClassName()),
+                new Definition\Identity("id")
             )
         ]);
 
@@ -70,10 +70,9 @@ class InformationPointSpec extends ObjectBehavior
     function it_tells_that_entity_is_not_persisted_when_it_has_empty_identity()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                []
+            new Definition(
+                new ClassName(EntityFake::getClassName()),
+                new Definition\Identity("id")
             )
         ]);
 
@@ -84,28 +83,27 @@ class InformationPointSpec extends ObjectBehavior
     function it_throws_exception_during_persist_check_when_property_does_not_exists()
     {
         $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("not_exists"),
-                []
+            new Definition(
+                new ClassName(EntityFake::getClassName()),
+                new Definition\Identity("not_exists")
             )
         ]);
 
         $entity = new EntityFake(1);
         $this->shouldThrow(
-            new InvalidPropertyPathException("Cant access identifier in \"\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
+            new InvalidPropertyPathException("Cant access identifier in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
         )->during("isPersisted", [$entity]);
     }
 
     function it_compare_two_equal_entities()
     {
-        $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                ["firstName"]
-            )
-        ]);
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Definition\Identity("id")
+        );
+        $definition->addToObserved(new Definition\Property("firstName"));
+
+        $this->beConstructedWith([$definition]);
 
         $firstEntity = new EntityFake(1);
         $secondEntity = clone $firstEntity;
@@ -115,13 +113,13 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_compare_two_different_entities()
     {
-        $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                ["firstName"]
-            )
-        ]);
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Definition\Identity("id")
+        );
+        $definition->addToObserved(new Definition\Property("firstName"));
+
+        $this->beConstructedWith([$definition]);
 
         $firstEntity = new EntityFake(1);
         $secondEntity = clone $firstEntity;
@@ -132,13 +130,13 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_get_changes_between_entities()
     {
-        $this->beConstructedWith([
-            new ClassDefinition(
-                new ClassName("\\Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                ["firstName"]
-            )
-        ]);
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Definition\Identity("id")
+        );
+        $definition->addToObserved(new Definition\Property("firstName"));
+
+        $this->beConstructedWith([$definition]);
 
         $firstEntity = new EntityFake(1, "Norbert");
         $secondEntity = clone $firstEntity;
