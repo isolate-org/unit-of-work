@@ -37,8 +37,8 @@ final class ClassName
      * @param $entity
      * @return bool
      */
-    public function isClassOf($entity)
+    public function isInstanceOf($entity)
     {
-        return is_a($entity, $this->className);
+        return $entity instanceof $this->className;
     }
 }
