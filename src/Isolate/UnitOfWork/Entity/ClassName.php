@@ -39,6 +39,6 @@ final class ClassName
      */
     public function isClassOf($entity)
     {
-        return is_a($entity, $this->className);
+        return $entity instanceof $this->className;
     }
 }
