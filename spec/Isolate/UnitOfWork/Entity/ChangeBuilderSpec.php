@@ -1,7 +1,8 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork\Object;
+namespace spec\Isolate\UnitOfWork\Entity;
 
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
@@ -16,7 +17,7 @@ class ChangeBuilderSpec extends ObjectBehavior
     {
         $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
 
-        $this->isDifferent($firstObject, $secondObject, "firstName")->shouldReturn(false);
+        $this->isDifferent(new Property("firstName"), $firstObject, $secondObject)->shouldReturn(false);
     }
 
     function it_returns_true_when_there_is_any_difference_between_same_property_in_two_objects()
@@ -24,23 +25,22 @@ class ChangeBuilderSpec extends ObjectBehavior
         $firstObject = new EntityFake(1, "Norbert");
         $secondObject = new EntityFake(1, "Michal");
 
-        $this->isDifferent($firstObject, $secondObject, "firstName")->shouldReturn(true);;
+        $this->isDifferent(new Property("firstName"), $firstObject, $secondObject)->shouldReturn(true);;
     }
 
     function it_throws_exception_when_at_least_one_of_compared_values_is_not_an_object()
     {
         $this->shouldThrow(new InvalidArgumentException("Compared values need to be a valid objects."))
-            ->during("isDifferent", ["fakeEntity", new EntityFake(), "firstName"]);
+            ->during("isDifferent", [new Property("firstName"), "fakeEntity", new EntityFake()]);
 
         $this->shouldThrow(new InvalidArgumentException("Compared values need to be a valid objects."))
-            ->during("isDifferent", [new EntityFake(), "fakeEntity", "firstName"]);
+            ->during("isDifferent", [new Property("firstName"), new EntityFake(), "fakeEntity"]);
     }
 
     function it_throws_exception_when_compared_objects_have_different_classes()
     {
         $this->shouldThrow(new InvalidArgumentException("Compared values need to be an instances of the same class."))
-            ->during("isDifferent", [new ProtectedEntity(), new EntityFake(), "firstName"]);
-
+            ->during("isDifferent", [new Property("firstName"), new ProtectedEntity(), new EntityFake()]);
     }
 
     function it_throws_exception_when_property_does_not_exists()
@@ -48,7 +48,7 @@ class ChangeBuilderSpec extends ObjectBehavior
         $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
 
         $this->shouldThrow(new NotExistingPropertyException("Property \"title\" does not exists in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" class."))
-            ->during("isDifferent", [$firstObject, $secondObject, "title"]);
+            ->during("isDifferent", [new Property("title"), $firstObject, $secondObject]);
     }
 
     function it_throws_exception_when_property_values_are_identical_in_both_objects()
@@ -56,7 +56,7 @@ class ChangeBuilderSpec extends ObjectBehavior
         $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
 
         $this->shouldThrow(new RuntimeException("There are no differences between objects properties."))
-            ->during("buildChange", [$firstObject, $secondObject, "firstName"]);
+            ->during("buildChange", [new Property("firstName"), $firstObject, $secondObject]);
     }
 
     function it_throws_exception_when_property_values_are_identical_arrays()
@@ -68,7 +68,7 @@ class ChangeBuilderSpec extends ObjectBehavior
         $secondObject->setItems([new EntityFake(5), new EntityFake(6)]);
 
         $this->shouldThrow(new RuntimeException("There are no differences between objects properties."))
-            ->during("buildChange", [$firstObject, $secondObject, "items"]);
+            ->during("buildChange", [new Property("items"), $firstObject, $secondObject]);
     }
 
     function it_build_change_for_different_objects()
@@ -78,7 +78,9 @@ class ChangeBuilderSpec extends ObjectBehavior
 
         $secondObject->changeFirstName("Michal");
 
-        $this->buildChange($firstObject, $secondObject, "firstName")->getOriginValue()->shouldReturn("Norbert");
+        $change = $this->buildChange(new Property("firstName"), $firstObject, $secondObject);
+        $change->getOriginValue()->shouldReturn("Norbert");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change");
     }
 }
 

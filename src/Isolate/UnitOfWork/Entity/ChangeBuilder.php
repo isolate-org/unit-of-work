@@ -1,10 +1,11 @@
 <?php
 
-namespace Isolate\UnitOfWork\Object;
+namespace Isolate\UnitOfWork\Entity;
 
-use Isolate\UnitOfWork\Change;
+use Isolate\UnitOfWork\Object\PropertyAccessor;
+use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
-use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 
 final class ChangeBuilder
@@ -20,18 +21,18 @@ final class ChangeBuilder
     }
 
     /**
+     * @param Property $property
      * @param $firstObject
      * @param $secondObject
-     * @param string $propertyName
      * @return bool
-     * @throws NotExistingPropertyException
+     * @throws InvalidArgumentException
      */
-    public function isDifferent($firstObject, $secondObject, $propertyName)
+    public function isDifferent(Property $property, $firstObject, $secondObject)
     {
         $this->validaObjects($firstObject, $secondObject);
 
-        $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyName);
-        $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyName);
+        $firstValue = $this->propertyAccessor->getValue($firstObject, $property->getName());
+        $secondValue = $this->propertyAccessor->getValue($secondObject, $property->getName());
 
         if ($this->areArrays($firstValue, $secondValue)) {
             return !$this->arraysAreEqual($firstValue, $secondValue);
@@ -45,22 +46,22 @@ final class ChangeBuilder
     }
 
     /**
+     * @param Property $property
      * @param $firstObject
      * @param $secondObject
-     * @param $propertyName
      * @return Change
      * @throws RuntimeException
      */
-    public function buildChange($firstObject, $secondObject, $propertyName)
+    public function buildChange(Property $property, $firstObject, $secondObject)
     {
-        if (!$this->isDifferent($firstObject, $secondObject, $propertyName)) {
+        if (!$this->isDifferent($property, $firstObject, $secondObject)) {
             throw new RuntimeException("There are no differences between objects properties.");
         }
 
-        $firstValue = $this->propertyAccessor->getValue($firstObject, $propertyName);
-        $secondValue = $this->propertyAccessor->getValue($secondObject, $propertyName);
+        $firstValue = $this->propertyAccessor->getValue($firstObject, $property->getName());
+        $secondValue = $this->propertyAccessor->getValue($secondObject, $property->getName());
 
-        return new Change($firstValue, $secondValue, $propertyName);
+        return new Change($property, $firstValue, $secondValue);
     }
 
     /**

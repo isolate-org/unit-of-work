@@ -5,10 +5,12 @@ namespace Isolate\UnitOfWork\Entity;
 use Isolate\UnitOfWork\Command\EditCommandHandler;
 use Isolate\UnitOfWork\Command\NewCommandHandler;
 use Isolate\UnitOfWork\Command\RemoveCommandHandler;
+use Isolate\UnitOfWork\Entity\Definition\Identity;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 
-class ClassDefinition
+class Definition
 {
     /**
      * @var string
@@ -16,7 +18,7 @@ class ClassDefinition
     private $className;
 
     /**
-     * @var IdDefinition
+     * @var Identity
      */
     private $idDefinition;
 
@@ -42,17 +44,50 @@ class ClassDefinition
 
     /**
      * @param ClassName $className
-     * @param IdDefinition $idDefinition
-     * @param $observedProperties
+     * @param Identity $idDefinition
      * @throws InvalidArgumentException
      */
-    public function __construct(ClassName $className, IdDefinition $idDefinition, array $observedProperties)
+    public function __construct(ClassName $className, Identity $idDefinition)
     {
-        $this->validatePropertyPaths((string) $className, $idDefinition, $observedProperties);
-
         $this->className = $className;
         $this->idDefinition = $idDefinition;
-        $this->observedProperties = $observedProperties;
+        $this->observedProperties = [];
+    }
+
+    /**
+     * @param Property[] $properties
+     * @throws InvalidArgumentException
+     * @throws NotExistingPropertyException
+     */
+    public function setObserved(array $properties)
+    {
+        foreach ($properties as $property) {
+            if (!$property instanceof Property) {
+                throw new InvalidArgumentException("Each observed property needs to be an instance of Property");
+            }
+        }
+        $this->validatePropertyPaths((string) $this->className, $this->idDefinition, $properties);
+        $this->observedProperties = array_unique($properties);
+    }
+
+    /**
+     * @param Property $property
+     * @throws InvalidArgumentException
+     * @throws NotExistingPropertyException
+     */
+    public function addToObserved(Property $property)
+    {
+        $this->validatePropertyPaths((string) $this->className, $this->idDefinition, [$property]);
+        $this->observedProperties[] = $property;
+        $this->observedProperties = array_unique($this->observedProperties);
+    }
+
+    /**
+     * @return Property[]|array
+     */
+    public function getObservedProperties()
+    {
+        return $this->observedProperties;
     }
 
     /**
@@ -64,7 +99,7 @@ class ClassDefinition
     }
 
     /**
-     * @return IdDefinition
+     * @return Identity
      */
     public function getIdDefinition()
     {
@@ -153,24 +188,17 @@ class ClassDefinition
     }
 
     /**
-     * @return array
-     */
-    public function getObservedProperties()
-    {
-        return $this->observedProperties;
-    }
-
-    /**
      * @param $className
-     * @param IdDefinition $idDefinition
+     * @param Identity $idDefinition
      * @param array $observedProperties
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
      */
-    private function validatePropertyPaths($className, IdDefinition $idDefinition, array $observedProperties)
+    private function validatePropertyPaths($className, Identity $idDefinition, array $observedProperties)
     {
         $reflection = new \ReflectionClass($className);
-        foreach ($observedProperties as $propertyName) {
+        foreach ($observedProperties as $property) {
+            $propertyName = $property->getName();
             if ($idDefinition->itFits($propertyName)) {
                 throw new InvalidArgumentException("Id definition property path can't be between observer properties.");
             }

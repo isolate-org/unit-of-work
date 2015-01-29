@@ -3,7 +3,7 @@
 namespace Isolate\UnitOfWork;
 
 use Isolate\UnitOfWork\Entity\InformationPoint;
-use Isolate\UnitOfWork\Value\Cloner\Adapter\DeepCopy\Cloner;
+use Isolate\UnitOfWork\Object\Cloner\Adapter\DeepCopy\Cloner;
 use Isolate\UnitOfWork\Command\EditCommand;
 use Isolate\UnitOfWork\Command\NewCommand;
 use Isolate\UnitOfWork\Command\RemoveCommand;
@@ -14,7 +14,7 @@ use Isolate\UnitOfWork\Event\PreRemove;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Object\RecoveryPoint;
-use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWork
@@ -109,7 +109,7 @@ class UnitOfWork
         $hash = spl_object_hash($entity);
 
         $this->entities[$hash] = $entity;
-        $this->originEntities[$hash] = $this->cloner->cloneValue($entity);
+        $this->originEntities[$hash] = $this->cloner->cloneObject($entity);
     }
 
     /**
@@ -235,7 +235,7 @@ class UnitOfWork
      * @param $entityClassDefinition
      * @param $entity
      */
-    private function handleNewObject(ClassDefinition $entityClassDefinition, $entity)
+    private function handleNewObject(Definition $entityClassDefinition, $entity)
     {
         if ($entityClassDefinition->hasNewCommandHandler()) {
             return $entityClassDefinition->getNewCommandHandler()->handle(
@@ -250,7 +250,7 @@ class UnitOfWork
      * @param $originEntity
      * @throws RuntimeException
      */
-    private function handleEditedObject(ClassDefinition $entityClassDefinition, $entity, $originEntity)
+    private function handleEditedObject(Definition $entityClassDefinition, $entity, $originEntity)
     {
         if ($entityClassDefinition->hasEditCommandHandler()) {
             return $entityClassDefinition->getEditCommandHandler()
@@ -270,7 +270,7 @@ class UnitOfWork
      * @param $entity
      * @throws RuntimeException
      */
-    private function handleRemovedObject(ClassDefinition $entityClassDefinition, $entity)
+    private function handleRemovedObject(Definition $entityClassDefinition, $entity)
     {
         if ($entityClassDefinition->hasRemoveCommandHandler()) {
             return $entityClassDefinition->getRemoveCommandHandler()

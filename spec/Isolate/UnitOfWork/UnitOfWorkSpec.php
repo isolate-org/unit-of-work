@@ -2,9 +2,10 @@
 
 namespace spec\Isolate\UnitOfWork;
 
-use Isolate\UnitOfWork\Entity\ClassDefinition;
+use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
-use Isolate\UnitOfWork\Entity\IdDefinition;
+use Isolate\UnitOfWork\Entity\Definition\Identity;
+use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\EntityStates;
@@ -18,13 +19,13 @@ class UnitOfWorkSpec extends ObjectBehavior
 {
     function let(EventDispatcher $eventDispatcher)
     {
-        $entityInformationPoint = new InformationPoint([
-            new ClassDefinition(
-                new ClassName("Isolate\\UnitOfWork\\Tests\\Double\\EntityFake"),
-                new IdDefinition("id"),
-                ["firstName", "lastName", "items"]
-            )
-        ]);
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Identity("id")
+        );
+        $definition->setObserved([new Property("firstName"), new Property("lastName"), new Property("items")]);
+
+        $entityInformationPoint = new InformationPoint([$definition]);
 
         $this->beConstructedWith($entityInformationPoint, $eventDispatcher);
     }
