@@ -4,13 +4,10 @@ namespace spec\Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
-use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
-use Isolate\UnitOfWork\Tests\Double\EntityFakeChild;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
