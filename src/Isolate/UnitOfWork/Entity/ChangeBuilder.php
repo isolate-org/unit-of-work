@@ -3,7 +3,6 @@
 namespace Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Object\PropertyAccessor;
-use Isolate\UnitOfWork\Object\Scalar;
 use Isolate\UnitOfWork\Entity\Value\Change;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
@@ -50,10 +49,10 @@ final class ChangeBuilder
      * @param Property $property
      * @param $firstObject
      * @param $secondObject
-     * @return Scalar
+     * @return Change
      * @throws RuntimeException
      */
-    public function buildChange(Definition\Property $property, $firstObject, $secondObject)
+    public function buildChange(Property $property, $firstObject, $secondObject)
     {
         if (!$this->isDifferent($property, $firstObject, $secondObject)) {
             throw new RuntimeException("There are no differences between objects properties.");

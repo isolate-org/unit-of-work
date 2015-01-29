@@ -88,7 +88,7 @@ class InformationPoint
     /**
      * @param $firstEntity
      * @param $secondEntity
-     * @return \Isolate\UnitOfWork\Value\\Isolate\UnitOfWork\Entity\Value\ChangeSet
+     * @return ChangeSet
      * @throws InvalidPropertyPathException
      * @throws RuntimeException
      */

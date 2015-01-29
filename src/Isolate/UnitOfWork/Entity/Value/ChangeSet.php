@@ -14,7 +14,7 @@ class ChangeSet extends \ArrayObject
     public function hasChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
-            /* @var \Isolate\UnitOfWork\Entity\Value\Change $change */
+            /* @var Change $change */
             if ($change->isFor($propertyName)) {
                 return true;
             }
