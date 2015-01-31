@@ -2,8 +2,6 @@
 
 namespace Isolate\UnitOfWork\Entity;
 
-use Isolate\UnitOfWork\Entity\ChangeBuilder;
-use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
@@ -12,11 +10,6 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class InformationPoint
 {
-    /**
-     * @var ChangeBuilder
-     */
-    private $changeBuilder;
-
     /**
      * @var array|Definition[]
      */
@@ -40,7 +33,6 @@ class InformationPoint
             }
         }
 
-        $this->changeBuilder = new ChangeBuilder();
         $this->entityDefinitions = $entityDefinitions;
     }
 
@@ -51,7 +43,7 @@ class InformationPoint
      */
     public function isPersisted($entity)
     {
-        $this->validateObject($entity);
+        $this->validateEntity($entity);
         $propertyAccessor = new PropertyAccessor(false, true);
         $entityDefinition = $this->getDefinition($entity);
         $idPropertyPath = $entityDefinition->getIdDefinition()->getPropertyPath();
@@ -68,57 +60,6 @@ class InformationPoint
 
         return !empty($identity) || $identity === 0;
     }
-
-    /**
-     * @param $firstEntity
-     * @param $secondEntity
-     * @return bool
-     */
-    public function areEqual($firstEntity, $secondEntity)
-    {
-        foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($property, $firstEntity, $secondEntity)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @param $firstEntity
-     * @param $secondEntity
-     * @return ChangeSet
-     * @throws InvalidPropertyPathException
-     * @throws RuntimeException
-     */
-    public function getChanges($firstEntity, $secondEntity)
-    {
-        if ($this->areEqual($firstEntity, $secondEntity)) {
-            throw new RuntimeException("Objects are equal.");
-        }
-
-        $changes = [];
-        foreach ($this->getDefinition($firstEntity)->getObservedProperties() as $property) {
-            if ($this->changeBuilder->isDifferent($property, $firstEntity, $secondEntity)) {
-                $changes[] = $this->changeBuilder->buildChange($property, $firstEntity, $secondEntity);
-            }
-        }
-
-        return new ChangeSet($changes);
-    }
-
-    /**
-     * @param $object
-     * @throws RuntimeException
-     */
-    private function validateObject($object)
-    {
-        if (!$this->hasDefinition($object)) {
-            throw new RuntimeException(sprintf("Class \"%s\" does not have definition.", get_class($object)));
-        }
-    }
-
 
     /**
      * @param $entity
@@ -149,5 +90,16 @@ class InformationPoint
         }
 
         return false;
+    }
+
+    /**
+     * @param $entity
+     * @throws RuntimeException
+     */
+    private function validateEntity($entity)
+    {
+        if (!$this->hasDefinition($entity)) {
+            throw new RuntimeException(sprintf("Class \"%s\" does not have definition.", get_class($entity)));
+        }
     }
 }

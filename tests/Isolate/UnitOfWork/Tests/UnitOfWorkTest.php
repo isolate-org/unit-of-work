@@ -2,6 +2,8 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
+use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Entity\Value\Change;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
@@ -172,9 +174,10 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork()
     {
-        $informationPoint = new InformationPoint([$this->createFakeEntityDefinition()]);
-
-        return new UnitOfWork($informationPoint, new EventDispatcher());
+        return new UnitOfWork(
+            new InformationPoint([$this->createFakeEntityDefinition()]),
+            new EventDispatcher()
+        );
     }
 
     /**
@@ -182,7 +185,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createFakeEntityDefinition()
     {
-        $definition =  new Definition(new ClassName(EntityFake::getClassName()), new Identity("id"));
+        $definition = new Definition(new ClassName(EntityFake::getClassName()), new Identity("id"));
         $definition->setObserved([
             new Property("firstName"),
             new Property("lastName"),

@@ -4,6 +4,7 @@ namespace spec\Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
@@ -13,6 +14,11 @@ use Prophecy\Argument;
 
 class InformationPointSpec extends ObjectBehavior
 {
+    function let()
+    {
+        $this->beConstructedWith([]);
+    }
+
     function it_throws_exception_when_constructed_with_non_traversable_class_definition_collection()
     {
         $this->shouldThrow(new InvalidArgumentException("Class definitions collection must be traversable."))
@@ -40,12 +46,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_persisted_when_it_has_not_empty_identity()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake(1);
         $this->isPersisted($entity)->shouldReturn(true);
@@ -53,12 +56,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_persisted_when_it_has_identity_equal_to_zero()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake(1);
         $this->isPersisted($entity)->shouldReturn(true);
@@ -66,12 +66,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_not_persisted_when_it_has_empty_identity()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake();
         $this->isPersisted($entity)->shouldReturn(false);
@@ -79,67 +76,13 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_throws_exception_during_persist_check_when_property_does_not_exists()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("not_exists")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("not_exists"))]
+        );
 
         $entity = new EntityFake(1);
         $this->shouldThrow(
             new InvalidPropertyPathException("Cant access identifier in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
         )->during("isPersisted", [$entity]);
-    }
-
-    function it_compare_two_equal_entities()
-    {
-        $definition = new Definition(
-            new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
-        );
-        $definition->addToObserved(new Definition\Property("firstName"));
-
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1);
-        $secondEntity = clone $firstEntity;
-
-        $this->areEqual($firstEntity, $secondEntity)->shouldReturn(true);
-    }
-
-    function it_compare_two_different_entities()
-    {
-        $definition = new Definition(
-            new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
-        );
-        $definition->addToObserved(new Definition\Property("firstName"));
-
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1);
-        $secondEntity = clone $firstEntity;
-        $secondEntity->changeFirstName("new first name");
-
-        $this->areEqual($firstEntity, $secondEntity)->shouldReturn(false);
-    }
-
-    function it_get_changes_between_entities()
-    {
-        $definition = new Definition(
-            new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
-        );
-        $definition->addToObserved(new Definition\Property("firstName"));
-
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1, "Norbert");
-        $secondEntity = clone $firstEntity;
-        $secondEntity->changeFirstName("Michal");
-
-        $this->getChanges($firstEntity, $secondEntity)->count()->shouldReturn(1);
-        $this->getChanges($firstEntity, $secondEntity)->getChangeFor("firstName")->getOriginValue()->shouldReturn("Norbert");
     }
 }
