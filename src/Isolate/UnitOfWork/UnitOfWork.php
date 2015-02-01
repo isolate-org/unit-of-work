@@ -303,9 +303,9 @@ class UnitOfWork
 
     private function updateEntitiesStates()
     {
+        $this->removedEntities = [];
         foreach ($this->entities as $entityHash => $entity) {
-            $this->originEntities[$entityHash] = $entity;
-            $this->removedEntities[$entityHash] = EntityStates::PERSISTED_ENTITY;
+            $this->originEntities[$entityHash] = $this->cloner->cloneObject($entity);
         }
     }
 
