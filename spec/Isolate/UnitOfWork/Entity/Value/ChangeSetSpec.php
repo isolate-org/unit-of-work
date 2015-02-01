@@ -2,7 +2,7 @@
 
 namespace spec\Isolate\UnitOfWork\Entity\Value;
 
-use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use PhpSpec\ObjectBehavior;
@@ -17,7 +17,7 @@ class ChangeSetSpec extends ObjectBehavior
 
     function it_has_information_about_changes_for_specific_property_name()
     {
-        $change = new Change(new Property("firstName"), "Michal", "Norbert");
+        $change = new ScalarChange(new Property("firstName"), "Michal", "Norbert");
         $this->beConstructedWith([$change]);
 
         $this->hasChangeFor("firstName")->shouldReturn(true);

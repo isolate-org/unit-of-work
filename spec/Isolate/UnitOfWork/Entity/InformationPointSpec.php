@@ -4,11 +4,11 @@ namespace spec\Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
-use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
+use Isolate\UnitOfWork\Tests\Double\EntityFakeChild;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
@@ -84,5 +84,19 @@ class InformationPointSpec extends ObjectBehavior
         $this->shouldThrow(
             new InvalidPropertyPathException("Cant access identifier in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
         )->during("isPersisted", [$entity]);
+    }
+
+    function it_throws_exception_when_associated_entity_is_not_defied()
+    {
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Definition\Identity("not_exists")
+        );
+        $association = new Definition\Association(new ClassName(EntityFakeChild::getClassName()), Definition\Association::TO_MANY_ENTITIES);
+        $definition->addToObserved(new Definition\Property("children", $association));
+
+        $this->shouldThrow(
+            new InvalidArgumentException("Entity class \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFakeChild\" used in association of \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" entity does not have definition.")
+        )->during("__construct", [[$definition]]);
     }
 }

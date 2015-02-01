@@ -12,10 +12,16 @@ final class Property
     private $name;
 
     /**
+     * @var null|Association
+     */
+    private $association;
+
+    /**
      * @param string $name
+     * @param null|Association $association
      * @throws InvalidArgumentException
      */
-    public function __construct($name)
+    public function __construct($name, Association $association = null)
     {
         if (empty($name)) {
             throw new InvalidArgumentException("Property name can't be empty.");
@@ -26,6 +32,7 @@ final class Property
         }
 
         $this->name = $name;
+        $this->association = $association;
     }
 
     public function __toString()
@@ -39,5 +46,21 @@ final class Property
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAssociated()
+    {
+        return !is_null($this->association);
+    }
+
+    /**
+     * @return null|Association
+     */
+    public function getAssociation()
+    {
+        return $this->association;
     }
 }

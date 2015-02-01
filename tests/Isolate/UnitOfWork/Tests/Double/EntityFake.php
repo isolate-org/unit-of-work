@@ -22,6 +22,11 @@ class EntityFake
     private $items;
 
     /**
+     * @var array|EntityFakeChild[]
+     */
+    private $children;
+
+    /**
      * @param null $id
      * @param null $firstName
      * @param null $lastName
@@ -32,6 +37,7 @@ class EntityFake
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->items = $items;
+        $this->children = [];
     }
 
     /**

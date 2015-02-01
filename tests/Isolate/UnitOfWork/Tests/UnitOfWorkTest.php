@@ -4,7 +4,7 @@ namespace Isolate\UnitOfWork\Tests;
 
 use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Property\ValueComparer;
-use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Property;
@@ -71,8 +71,8 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->editCommandHandler->entityWasPersisted($entity));
         $this->assertEquals(
             new ChangeSet([
-                new Change(new Property("firstName"), "Norbert", "Michal"),
-                new Change(new Property("lastName"), "Orzechowicz", "Dabrowski")
+                new ScalarChange(new Property("firstName"), "Norbert", "Michal"),
+                new ScalarChange(new Property("lastName"), "Orzechowicz", "Dabrowski")
             ]),
             $this->editCommandHandler->getPersistedEntityChanges($entity)
         );
@@ -93,7 +93,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($this->editCommandHandler->entityWasPersisted($entity));
         $this->assertEquals(
-            new ChangeSet([new Change(
+            new ChangeSet([new ScalarChange(
                 new Property("items"),
                 [new EntityFake(2, "Dawid", "Sajdak")],
                 [new EntityFake(2, "Michal", "Dabrowski")]

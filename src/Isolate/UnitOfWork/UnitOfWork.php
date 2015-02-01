@@ -84,7 +84,7 @@ class UnitOfWork
     {
         $this->entityInformationPoint = $entityInformationPoint;
         $this->eventDispatcher = $eventDispatcher;
-        $this->changeBuilder = new ChangeBuilder();
+        $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
         $this->comparer = new Comparer();
         $this->objectRecoveryPoint = new RecoveryPoint();
         $this->cloner = new Cloner();
@@ -263,7 +263,6 @@ class UnitOfWork
     {
         if ($entityClassDefinition->hasEditCommandHandler()) {
             $changeSet = $this->changeBuilder->buildChanges(
-                $this->entityInformationPoint->getDefinition($entity),
                 $originEntity,
                 $entity
             );

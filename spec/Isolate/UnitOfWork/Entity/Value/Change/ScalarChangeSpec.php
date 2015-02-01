@@ -1,12 +1,12 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork\Entity\Value;
+namespace spec\Isolate\UnitOfWork\Entity\Value\Change;
 
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class ChangeSpec extends ObjectBehavior
+class ScalarChangeSpec extends ObjectBehavior
 {
     function it_is_a_change()
     {

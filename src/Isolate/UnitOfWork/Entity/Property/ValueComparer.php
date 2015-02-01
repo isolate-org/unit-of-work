@@ -37,7 +37,7 @@ final class ValueComparer
         }
 
         if ($this->areObjects($firstValue, $secondValue)) {
-            return $firstValue == $secondValue;
+            return $firstValue != $secondValue;
         }
 
         return $firstValue !== $secondValue;
