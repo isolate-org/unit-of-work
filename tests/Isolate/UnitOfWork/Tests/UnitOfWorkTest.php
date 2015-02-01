@@ -116,6 +116,24 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($unitOfWork->isRegistered($entity));
     }
 
+    function test_commits_after_persist_and_update_entity()
+    {
+        $unitOfWork = $this->createUnitOfWork();
+
+        $entity = new EntityFake();
+        $unitOfWork->register($entity);
+
+        $this->assertSame(EntityStates::NEW_ENTITY, $unitOfWork->getEntityState($entity));
+        $unitOfWork->commit();
+
+        $this->assertTrue($this->newCommandHandler->entityWasPersisted($entity));
+
+        $entity->changeFirstName('Norbert');
+        $unitOfWork->commit();
+
+        $this->assertTrue($this->editCommandHandler->entityWasPersisted($entity));
+    }
+
     function test_rollback_entity_before_commit()
     {
         $unitOfWork = $this->createUnitOfWork();
