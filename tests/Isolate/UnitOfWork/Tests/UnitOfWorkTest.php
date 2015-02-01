@@ -191,9 +191,9 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             new Property("lastName"),
             new Property("items")]
         );
-        $definition->addNewCommandHandler($this->newCommandHandler);
-        $definition->addEditCommandHandler($this->editCommandHandler);
-        $definition->addRemoveCommandHandler($this->removeCommandHandler);
+        $definition->setNewCommandHandler($this->newCommandHandler);
+        $definition->setEditCommandHandler($this->editCommandHandler);
+        $definition->setRemoveCommandHandler($this->removeCommandHandler);
 
         return $definition;
     }

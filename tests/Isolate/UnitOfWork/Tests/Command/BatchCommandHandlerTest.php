@@ -30,7 +30,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     function test_handling_batch_of_new_commands()
     {
         $classDefinition = $this->createClassDefinition();
-        $classDefinition->addNewCommandHandler(new BatchNewCommandHandlerMock());
+        $classDefinition->setNewCommandHandler(new BatchNewCommandHandlerMock());
 
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -51,7 +51,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     function test_handling_batch_of_new_commands_even_when_last_batch_is_not_complete()
     {
         $classDefinition = $this->createClassDefinition();
-        $classDefinition->addNewCommandHandler(new BatchNewCommandHandlerMock());
+        $classDefinition->setNewCommandHandler(new BatchNewCommandHandlerMock());
 
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -72,7 +72,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     function test_handling_batch_of_edit_commands_even_when_last_batch_is_not_complete()
     {
         $classDefinition = $this->createClassDefinition();
-        $classDefinition->addEditCommandHandler(new BatchEditCommandHandlerMock());
+        $classDefinition->setEditCommandHandler(new BatchEditCommandHandlerMock());
 
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -95,7 +95,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     function test_handling_batch_of_remove_commands_even_when_last_batch_is_not_complete()
     {
         $classDefinition = $this->createClassDefinition();
-        $classDefinition->addRemoveCommandHandler(new BatchRemoveCommandHandlerMock());
+        $classDefinition->setRemoveCommandHandler(new BatchRemoveCommandHandlerMock());
 
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
@@ -117,7 +117,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
     function test_handling_batch_of_edit_commands_that_fails()
     {
         $classDefinition = $this->createClassDefinition();
-        $classDefinition->addEditCommandHandler(new FailingBatchEditCommandHandlerStub());
+        $classDefinition->setEditCommandHandler(new FailingBatchEditCommandHandlerStub());
 
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition

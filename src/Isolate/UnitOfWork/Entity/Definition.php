@@ -118,7 +118,7 @@ class Definition
     /**
      * @param NewCommandHandler $commandHandler
      */
-    public function addNewCommandHandler(NewCommandHandler $commandHandler)
+    public function setNewCommandHandler(NewCommandHandler $commandHandler)
     {
         $this->newCommandHandler = $commandHandler;
     }
@@ -142,7 +142,7 @@ class Definition
     /**
      * @param EditCommandHandler $commandHandler
      */
-    public function addEditCommandHandler(EditCommandHandler $commandHandler)
+    public function setEditCommandHandler(EditCommandHandler $commandHandler)
     {
         $this->editCommandHandler = $commandHandler;
     }
@@ -166,7 +166,7 @@ class Definition
     /**
      * @param RemoveCommandHandler $commandHandler
      */
-    public function addRemoveCommandHandler(RemoveCommandHandler $commandHandler)
+    public function setRemoveCommandHandler(RemoveCommandHandler $commandHandler)
     {
         $this->removeCommandHandler = $commandHandler;
     }

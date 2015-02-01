@@ -62,21 +62,21 @@ class DefinitionSpec extends ObjectBehavior
     function it_can_have_new_command_handler(NewCommandHandler $commandHandler)
     {
         $this->beConstructedWith(new ClassName(EntityFake::getClassName()), new Identity("id"));
-        $this->addNewCommandHandler($commandHandler);
+        $this->setNewCommandHandler($commandHandler);
         $this->hasNewCommandHandler()->shouldReturn(true);
     }
 
     function it_can_have_edit_command_handler(EditCommandHandler $commandHandler)
     {
         $this->beConstructedWith(new ClassName(EntityFake::getClassName()), new Identity("id"));
-        $this->addEditCommandHandler($commandHandler);
+        $this->setEditCommandHandler($commandHandler);
         $this->hasEditCommandHandler()->shouldReturn(true);
     }
 
     function it_can_have_remove_command_handler(RemoveCommandHandler $commandHandler)
     {
         $this->beConstructedWith(new ClassName(EntityFake::getClassName()), new Identity("id"));
-        $this->addRemoveCommandHandler($commandHandler);
+        $this->setRemoveCommandHandler($commandHandler);
         $this->hasRemoveCommandHandler()->shouldReturn(true);
     }
 }

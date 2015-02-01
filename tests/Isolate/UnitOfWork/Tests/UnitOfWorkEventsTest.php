@@ -47,7 +47,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
 
         $classDefinition = $this->createFakeEntityDefinition();
 
-        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $classDefinition->setEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
         ]);
@@ -73,7 +73,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
 
         $classDefinition = $this->createFakeEntityDefinition();
 
-        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $classDefinition->setEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
         ]);
@@ -93,7 +93,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
 
         $classDefinition = $this->createFakeEntityDefinition();
 
-        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $classDefinition->setEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
         ]);
@@ -113,7 +113,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
 
         $classDefinition = $this->createFakeEntityDefinition();
 
-        $classDefinition->addEditCommandHandler(new EditCommandHandlerMock());
+        $classDefinition->setEditCommandHandler(new EditCommandHandlerMock());
         $unitOfWork = $this->createUnitOfWork([
             $classDefinition
         ]);
