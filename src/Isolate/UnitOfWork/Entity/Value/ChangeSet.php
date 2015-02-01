@@ -41,6 +41,21 @@ class ChangeSet extends \ArrayObject
     }
 
     /**
+     * @param array $properties
+     * @return bool
+     */
+    public function hasChangesForAny(array $properties = [])
+    {
+        foreach ($properties as $propertyName) {
+            if ($this->hasChangeFor($propertyName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return Change[]
      */
     public function all()
