@@ -2,6 +2,8 @@
 
 namespace Isolate\UnitOfWork;
 
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
+use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Object\Cloner\Adapter\DeepCopy\Cloner;
 use Isolate\UnitOfWork\Command\EditCommand;
@@ -20,6 +22,16 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 class UnitOfWork
 {
     /**
+     * @var ChangeBuilder
+     */
+    private $changeBuilder;
+
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
+
+    /**
      * @var InformationPoint
      */
     private $entityInformationPoint;
@@ -28,6 +40,11 @@ class UnitOfWork
      * @var Cloner
      */
     private $cloner;
+
+    /**
+     * @var RecoveryPoint
+     */
+    private $objectRecoveryPoint;
 
     /**
      * @var array
@@ -45,11 +62,6 @@ class UnitOfWork
     private $originEntities;
 
     /**
-     * @var RecoveryPoint
-     */
-    private $objectRecoveryPoint;
-
-    /**
      * @var int
      */
     private $totalNewEntities;
@@ -65,26 +77,23 @@ class UnitOfWork
     private $totalRemovedEntities;
 
     /**
-     * @var EventDispatcher
-     */
-    private $eventDispatcher;
-
-    /**
      * @param InformationPoint $entityInformationPoint
      * @param EventDispatcher $eventDispatcher
      */
     public function __construct(InformationPoint $entityInformationPoint, EventDispatcher $eventDispatcher)
     {
         $this->entityInformationPoint = $entityInformationPoint;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
+        $this->comparer = new Comparer();
+        $this->objectRecoveryPoint = new RecoveryPoint();
+        $this->cloner = new Cloner();
         $this->removedEntities = [];
         $this->entities = [];
         $this->originEntities = [];
-        $this->objectRecoveryPoint = new RecoveryPoint();
-        $this->cloner = new Cloner();
         $this->totalNewEntities = 0;
         $this->totalEditedEntities = 0;
         $this->totalRemovedEntities = 0;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -141,15 +150,15 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if (array_key_exists(spl_object_hash($entity), $this->removedEntities)) {
+        if ($this->wasRemoved($entity)) {
             return EntityStates::REMOVED_ENTITY;
         }
 
-        if (!$this->entityInformationPoint->isPersisted($entity)) {
+        if (!$this->isPersisted($entity)) {
             return EntityStates::NEW_ENTITY;
         }
 
-        if (!$this->entityInformationPoint->areEqual($entity, $this->originEntities[spl_object_hash($entity)])) {
+        if ($this->isChanged($entity)) {
             return EntityStates::EDITED_ENTITY;
         }
 
@@ -253,13 +262,15 @@ class UnitOfWork
     private function handleEditedObject(Definition $entityClassDefinition, $entity, $originEntity)
     {
         if ($entityClassDefinition->hasEditCommandHandler()) {
+            $changeSet = $this->changeBuilder->buildChanges(
+                $originEntity,
+                $entity
+            );
+
             return $entityClassDefinition->getEditCommandHandler()
                 ->handle(new EditCommand(
                     $entity,
-                    $this->entityInformationPoint->getChanges(
-                        $originEntity,
-                        $entity
-                    ),
+                    $changeSet,
                     $this->totalEditedEntities
                 ));
         }
@@ -317,5 +328,38 @@ class UnitOfWork
                     break;
             }
         }
+    }
+
+    /**
+     * @param $entity
+     * @return bool
+     * @throws RuntimeException
+     */
+    private function isChanged($entity)
+    {
+        return !$this->comparer->areEqual(
+            $this->entityInformationPoint->getDefinition($entity),
+            $entity,
+            $this->originEntities[spl_object_hash($entity)]
+        );
+    }
+
+    /**
+     * @param $entity
+     * @return bool
+     */
+    private function wasRemoved($entity)
+    {
+        return array_key_exists(spl_object_hash($entity), $this->removedEntities);
+    }
+
+    /**
+     * @param $entity
+     * @return bool
+     * @throws Exception\InvalidPropertyPathException
+     */
+    private function isPersisted($entity)
+    {
+        return $this->entityInformationPoint->isPersisted($entity);
     }
 }

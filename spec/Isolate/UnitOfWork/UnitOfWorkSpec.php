@@ -26,7 +26,6 @@ class UnitOfWorkSpec extends ObjectBehavior
         $definition->setObserved([new Property("firstName"), new Property("lastName"), new Property("items")]);
 
         $entityInformationPoint = new InformationPoint([$definition]);
-
         $this->beConstructedWith($entityInformationPoint, $eventDispatcher);
     }
 

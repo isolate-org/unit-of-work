@@ -2,8 +2,10 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Property;
+use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Event\PostCommit;
 use Isolate\UnitOfWork\Event\PreGetState;
 use Isolate\UnitOfWork\Event\PreRegister;
@@ -124,12 +126,14 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param $classDefinitions
      * @return UnitOfWork
      */
-    private function createUnitOfWork(array $classDefinitions = [])
+    private function createUnitOfWork()
     {
-        return new UnitOfWork(new InformationPoint($classDefinitions), $this->eventDispatcher);
+        return new UnitOfWork(
+            new InformationPoint([$this->createFakeEntityDefinition()]),
+            $this->eventDispatcher
+        );
     }
 
     /**

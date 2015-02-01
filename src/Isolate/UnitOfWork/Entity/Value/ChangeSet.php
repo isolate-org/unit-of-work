@@ -3,7 +3,7 @@
 namespace Isolate\UnitOfWork\Entity\Value;
 
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 
 class ChangeSet extends \ArrayObject
 {
@@ -14,7 +14,7 @@ class ChangeSet extends \ArrayObject
     public function hasChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
-            /* @var Change $change */
+            /* @var ScalarChange $change */
             if ($change->isFor($propertyName)) {
                 return true;
             }
@@ -31,7 +31,7 @@ class ChangeSet extends \ArrayObject
     public function getChangeFor($propertyName)
     {
         foreach ($this->getIterator() as $change) {
-            /* @var Change $change */
+            /* @var \Isolate\UnitOfWork\Entity\Value\Change\ScalarChange $change */
             if ($change->isFor($propertyName)) {
                 return $change;
             }
@@ -41,7 +41,22 @@ class ChangeSet extends \ArrayObject
     }
 
     /**
-     * @return Change[]
+     * @param array $properties
+     * @return bool
+     */
+    public function hasChangesForAny(array $properties = [])
+    {
+        foreach ($properties as $propertyName) {
+            if ($this->hasChangeFor($propertyName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return ScalarChange[]
      */
     public function all()
     {

@@ -2,85 +2,238 @@
 
 namespace spec\Isolate\UnitOfWork\Entity;
 
-use Isolate\UnitOfWork\Entity\Definition\Property;
-use Isolate\UnitOfWork\Exception\InvalidArgumentException;
-use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
+use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\Definition;
+use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Exception\RuntimeException;
+use Isolate\UnitOfWork\Tests\Double\AssociatedEntityFake;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
-use Isolate\UnitOfWork\Tests\Double\ProtectedEntity;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
 class ChangeBuilderSpec extends ObjectBehavior
 {
-    function it_returns_false_when_there_is_no_difference_between_same_property_in_two_objects()
+    function let()
     {
-        $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
+        $informationPoint = new InformationPoint([
+            $this->createEntityDefinition(),
+            $this->createAssociatedEntityDefinition()
+        ]);
 
-        $this->isDifferent(new Property("firstName"), $firstObject, $secondObject)->shouldReturn(false);
-    }
-
-    function it_returns_true_when_there_is_any_difference_between_same_property_in_two_objects()
-    {
-        $firstObject = new EntityFake(1, "Norbert");
-        $secondObject = new EntityFake(1, "Michal");
-
-        $this->isDifferent(new Property("firstName"), $firstObject, $secondObject)->shouldReturn(true);;
-    }
-
-    function it_throws_exception_when_at_least_one_of_compared_values_is_not_an_object()
-    {
-        $this->shouldThrow(new InvalidArgumentException("Compared values need to be a valid objects."))
-            ->during("isDifferent", [new Property("firstName"), "fakeEntity", new EntityFake()]);
-
-        $this->shouldThrow(new InvalidArgumentException("Compared values need to be a valid objects."))
-            ->during("isDifferent", [new Property("firstName"), new EntityFake(), "fakeEntity"]);
-    }
-
-    function it_throws_exception_when_compared_objects_have_different_classes()
-    {
-        $this->shouldThrow(new InvalidArgumentException("Compared values need to be an instances of the same class."))
-            ->during("isDifferent", [new Property("firstName"), new ProtectedEntity(), new EntityFake()]);
-    }
-
-    function it_throws_exception_when_property_does_not_exists()
-    {
-        $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
-
-        $this->shouldThrow(new NotExistingPropertyException("Property \"title\" does not exists in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" class."))
-            ->during("isDifferent", [new Property("title"), $firstObject, $secondObject]);
-    }
-
-    function it_throws_exception_when_property_values_are_identical_in_both_objects()
-    {
-        $firstObject = $secondObject = new EntityFake(1, "Norbert", "Orzechowicz");
-
-        $this->shouldThrow(new RuntimeException("There are no differences between objects properties."))
-            ->during("buildChange", [new Property("firstName"), $firstObject, $secondObject]);
-    }
-
-    function it_throws_exception_when_property_values_are_identical_arrays()
-    {
-        $firstObject = new EntityFake(1);
-        $firstObject->setItems([new EntityFake(5), new EntityFake(6)]);
-
-        $secondObject = new EntityFake(1);
-        $secondObject->setItems([new EntityFake(5), new EntityFake(6)]);
-
-        $this->shouldThrow(new RuntimeException("There are no differences between objects properties."))
-            ->during("buildChange", [new Property("items"), $firstObject, $secondObject]);
+        $this->beConstructedWith($informationPoint);
     }
 
     function it_build_change_for_different_objects()
     {
-        $firstObject = new EntityFake(1, "Norbert");
-        $secondObject = clone($firstObject);
+        $sourceObject = new EntityFake(1, "Norbert");
+        $editedObject = clone($sourceObject);
+        $editedObject->changeFirstName("Michal");
 
-        $secondObject->changeFirstName("Michal");
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
 
-        $change = $this->buildChange(new Property("firstName"), $firstObject, $secondObject);
-        $change->getOriginValue()->shouldReturn("Norbert");
-        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change");
+        $changeSet->hasChangeFor('firstName')->shouldReturn(true);
+        $changeSet->getChangeFor('firstName')->getOriginValue()->shouldReturn("Norbert");
+        $changeSet->getChangeFor('firstName')->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\ScalarChange");
+        $changeSet->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\ChangeSet");
+    }
+
+    function it_throws_exception_when_new_entity_in_associated_property_does_not_match_target_class()
+    {
+
+        $sourceObject = new AssociatedEntityFake(1);
+        $editedObject = clone($sourceObject);
+        $editedObject->setParent(new EntityFake());
+
+        $this->shouldThrow(new RuntimeException(
+                sprintf("Property \"parent\" expects instanceof \"%s\" as a value.", AssociatedEntityFake::getClassName())
+            ))->during("buildChanges", [$sourceObject, $editedObject]);
+    }
+
+    function it_build_single_association_change_for_new_entity()
+    {
+        $parent = new AssociatedEntityFake(100);
+
+        $sourceObject = new AssociatedEntityFake(1);
+        $editedObject = clone($sourceObject);
+        $editedObject->setParent($parent);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("parent")->shouldReturn(true);
+        $changeSet->getChangeFor("parent")->getNewValue()->shouldReturn($parent);
+        $changeSet->getChangeFor("parent")->isPersisted()->shouldReturn(true);
+        $changeSet->getChangeFor("parent")->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\NewEntity");
+    }
+
+    function it_build_change_when_single_associated_entity_was_removed()
+    {
+        $parent = new AssociatedEntityFake(100);
+
+        $sourceObject = new AssociatedEntityFake(1, null, $parent);
+        $editedObject = clone($sourceObject);
+        $editedObject->removeParent();
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("parent")->shouldReturn(true);
+        $changeSet->getChangeFor("parent")->getOriginValue()->shouldReturn($parent);
+        $changeSet->getChangeFor("parent")->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\RemovedEntity");
+    }
+
+    function it_build_single_association_change_for_edited_entity()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, new AssociatedEntityFake(100, "Norbert"));
+        $editedObject = new AssociatedEntityFake(1, null, new AssociatedEntityFake(100, "Norbert"));
+        $editedObject->getParent()->setName("Dawid");
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("parent")->shouldReturn(true);
+        $changeSet->getChangeFor("parent")->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\EditedEntity");
+        $changeSet->getChangeFor("parent")->getChangeSet()->getChangeFor("name")->shouldBeAnInstanceOf(
+            "Isolate\\UnitOfWork\\Entity\\Value\\Change\\ScalarChange"
+        );
+        $changeSet->getChangeFor("parent")->getChangeSet()->getChangeFor("name")->getOriginValue()->shouldReturn("Norbert");
+        $changeSet->getChangeFor("parent")->getChangeSet()->getChangeFor("name")->getNewValue()->shouldReturn("Dawid");
+    }
+
+    function it_throws_exception_when_new_associated_collection_is_not_valid_array()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null);
+        $editedObject = new AssociatedEntityFake(1, null, null, "test");
+
+        $this->shouldThrow(
+                new RuntimeException("Property \"children\" is marked as associated with many entities and require new value to be traversable collection.")
+            )->during("buildChanges", [$sourceObject, $editedObject]);
+    }
+
+    function it_build_change_for_many_entities_association_that_knows_which_entities_were_added()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null, []);
+        $editedObject = new AssociatedEntityFake(1, null, null, [new AssociatedEntityFake()]);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("children")->shouldReturn(true);
+        $change = $changeSet->getChangeFor("children");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
+        $change->getNewElements()->shouldHaveCount(1);
+        $change->getRemovedElements()->shouldHaveCount(0);
+        $change->getEditedElements()->shouldHaveCount(0);
+    }
+
+    function it_build_change_for_many_entities_association_that_knows_which_entities_were_added_even_persisted()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null, []);
+        $editedObject = new AssociatedEntityFake(1, null, null, [new AssociatedEntityFake(100)]);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("children")->shouldReturn(true);
+        $change = $changeSet->getChangeFor("children");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
+        $change->getNewElements()->shouldHaveCount(1);
+        $change->getRemovedElements()->shouldHaveCount(0);
+        $change->getEditedElements()->shouldHaveCount(0);
+    }
+
+    function it_build_change_for_many_entities_association_that_knows_which_entities_were_removed()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null, [new AssociatedEntityFake(100)]);
+        $editedObject = new AssociatedEntityFake(1, null, null, []);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("children")->shouldReturn(true);
+        $change = $changeSet->getChangeFor("children");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
+        $change->getNewElements()->shouldHaveCount(0);
+        $change->getRemovedElements()->shouldHaveCount(1);
+        $change->getEditedElements()->shouldHaveCount(0);
+    }
+
+    function it_build_change_for_many_entities_association_that_knows_which_entities_were_edited()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null, [new AssociatedEntityFake(100)]);
+        $editedObject = new AssociatedEntityFake(1, null, null, [new AssociatedEntityFake(100, "Norbert")]);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("children")->shouldReturn(true);
+        $change = $changeSet->getChangeFor("children");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
+        $change->getNewElements()->shouldHaveCount(0);
+        $change->getRemovedElements()->shouldHaveCount(0);
+        $change->getEditedElements()->shouldHaveCount(1);
+    }
+
+    function it_build_change_for_many_entities_association_that_has_new_edited_and_removed_elements()
+    {
+        $sourceObject = new AssociatedEntityFake(1, null, null, [
+            new AssociatedEntityFake(100),
+            new AssociatedEntityFake(101),
+        ]);
+        $editedObject = new AssociatedEntityFake(1, null, null, [
+            new AssociatedEntityFake(101, "Norbert"),
+            new AssociatedEntityFake()
+        ]);
+
+        $changeSet = $this->buildChanges($sourceObject, $editedObject);
+
+        $changeSet->hasChangeFor("children")->shouldReturn(true);
+        $change = $changeSet->getChangeFor("children");
+        $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
+        $change->getNewElements()->shouldHaveCount(1);
+        $change->getRemovedElements()->shouldHaveCount(1);
+        $change->getEditedElements()->shouldHaveCount(1);
+    }
+
+    /**
+     * @return Definition
+     */
+    private function createEntityDefinition()
+    {
+        $definition = new Definition(
+            new ClassName(EntityFake::getClassName()),
+            new Definition\Identity("id")
+        );
+        $definition->addToObserved(new Definition\Property("firstName"));
+
+        return $definition;
+    }
+
+    /**
+     * @return Definition
+     */
+    private function createAssociatedEntityDefinition()
+    {
+        $definition = new Definition(
+            new ClassName(AssociatedEntityFake::getClassName()),
+            new Definition\Identity("id")
+        );
+        $parentAssociation = new Definition\Association(
+            new ClassName(AssociatedEntityFake::getClassName()),
+            Definition\Association::TO_SINGLE_ENTITY
+        );
+
+        $definition->setObserved([
+            new Definition\Property("parent", $parentAssociation),
+            new Definition\Property("children", $this->createChildrenAssociation()),
+            new Definition\Property("name")
+        ]);
+
+        return $definition;
+    }
+
+    /**
+     * @return Definition\Association
+     */
+    private function createChildrenAssociation()
+    {
+        return new Definition\Association(
+            new ClassName(AssociatedEntityFake::getClassName()),
+            Definition\Association::TO_MANY_ENTITIES
+        );
     }
 }
 

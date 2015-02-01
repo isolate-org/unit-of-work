@@ -8,11 +8,17 @@ use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
+use Isolate\UnitOfWork\Tests\Double\EntityFakeChild;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
 class InformationPointSpec extends ObjectBehavior
 {
+    function let()
+    {
+        $this->beConstructedWith([]);
+    }
+
     function it_throws_exception_when_constructed_with_non_traversable_class_definition_collection()
     {
         $this->shouldThrow(new InvalidArgumentException("Class definitions collection must be traversable."))
@@ -40,12 +46,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_persisted_when_it_has_not_empty_identity()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake(1);
         $this->isPersisted($entity)->shouldReturn(true);
@@ -53,12 +56,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_persisted_when_it_has_identity_equal_to_zero()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake(1);
         $this->isPersisted($entity)->shouldReturn(true);
@@ -66,12 +66,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_tells_that_entity_is_not_persisted_when_it_has_empty_identity()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("id")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("id"))]
+        );
 
         $entity = new EntityFake();
         $this->isPersisted($entity)->shouldReturn(false);
@@ -79,12 +76,9 @@ class InformationPointSpec extends ObjectBehavior
 
     function it_throws_exception_during_persist_check_when_property_does_not_exists()
     {
-        $this->beConstructedWith([
-            new Definition(
-                new ClassName(EntityFake::getClassName()),
-                new Definition\Identity("not_exists")
-            )
-        ]);
+        $this->beConstructedWith(
+            [new Definition(new ClassName(EntityFake::getClassName()),new Definition\Identity("not_exists"))]
+        );
 
         $entity = new EntityFake(1);
         $this->shouldThrow(
@@ -92,54 +86,17 @@ class InformationPointSpec extends ObjectBehavior
         )->during("isPersisted", [$entity]);
     }
 
-    function it_compare_two_equal_entities()
+    function it_throws_exception_when_associated_entity_is_not_defied()
     {
         $definition = new Definition(
             new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
+            new Definition\Identity("not_exists")
         );
-        $definition->addToObserved(new Definition\Property("firstName"));
+        $association = new Definition\Association(new ClassName(EntityFakeChild::getClassName()), Definition\Association::TO_MANY_ENTITIES);
+        $definition->addToObserved(new Definition\Property("children", $association));
 
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1);
-        $secondEntity = clone $firstEntity;
-
-        $this->areEqual($firstEntity, $secondEntity)->shouldReturn(true);
-    }
-
-    function it_compare_two_different_entities()
-    {
-        $definition = new Definition(
-            new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
-        );
-        $definition->addToObserved(new Definition\Property("firstName"));
-
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1);
-        $secondEntity = clone $firstEntity;
-        $secondEntity->changeFirstName("new first name");
-
-        $this->areEqual($firstEntity, $secondEntity)->shouldReturn(false);
-    }
-
-    function it_get_changes_between_entities()
-    {
-        $definition = new Definition(
-            new ClassName(EntityFake::getClassName()),
-            new Definition\Identity("id")
-        );
-        $definition->addToObserved(new Definition\Property("firstName"));
-
-        $this->beConstructedWith([$definition]);
-
-        $firstEntity = new EntityFake(1, "Norbert");
-        $secondEntity = clone $firstEntity;
-        $secondEntity->changeFirstName("Michal");
-
-        $this->getChanges($firstEntity, $secondEntity)->count()->shouldReturn(1);
-        $this->getChanges($firstEntity, $secondEntity)->getChangeFor("firstName")->getOriginValue()->shouldReturn("Norbert");
+        $this->shouldThrow(
+            new InvalidArgumentException("Entity class \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFakeChild\" used in association of \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" entity does not have definition.")
+        )->during("__construct", [[$definition]]);
     }
 }

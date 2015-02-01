@@ -2,7 +2,9 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
-use Isolate\UnitOfWork\Entity\Value\Change;
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
+use Isolate\UnitOfWork\Entity\Property\ValueComparer;
+use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Property;
@@ -69,8 +71,8 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->editCommandHandler->entityWasPersisted($entity));
         $this->assertEquals(
             new ChangeSet([
-                new Change(new Property("firstName"), "Norbert", "Michal"),
-                new Change(new Property("lastName"), "Orzechowicz", "Dabrowski")
+                new ScalarChange(new Property("firstName"), "Norbert", "Michal"),
+                new ScalarChange(new Property("lastName"), "Orzechowicz", "Dabrowski")
             ]),
             $this->editCommandHandler->getPersistedEntityChanges($entity)
         );
@@ -91,7 +93,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($this->editCommandHandler->entityWasPersisted($entity));
         $this->assertEquals(
-            new ChangeSet([new Change(
+            new ChangeSet([new ScalarChange(
                 new Property("items"),
                 [new EntityFake(2, "Dawid", "Sajdak")],
                 [new EntityFake(2, "Michal", "Dabrowski")]
@@ -172,9 +174,10 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork()
     {
-        $informationPoint = new InformationPoint([$this->createFakeEntityDefinition()]);
-
-        return new UnitOfWork($informationPoint, new EventDispatcher());
+        return new UnitOfWork(
+            new InformationPoint([$this->createFakeEntityDefinition()]),
+            new EventDispatcher()
+        );
     }
 
     /**
@@ -182,7 +185,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
      */
     private function createFakeEntityDefinition()
     {
-        $definition =  new Definition(new ClassName(EntityFake::getClassName()), new Identity("id"));
+        $definition = new Definition(new ClassName(EntityFake::getClassName()), new Identity("id"));
         $definition->setObserved([
             new Property("firstName"),
             new Property("lastName"),

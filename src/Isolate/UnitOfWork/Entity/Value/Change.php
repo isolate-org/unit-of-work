@@ -4,65 +4,26 @@ namespace Isolate\UnitOfWork\Entity\Value;
 
 use Isolate\UnitOfWork\Entity\Definition\Property;
 
-final class Change
+interface Change
 {
     /**
-     * @var mixed
+     * @return mixed
      */
-    private $originValue;
-
-    /**
-     * @var mixed
-     */
-    private $newValue;
-
-    /**
-     * @var Property
-     */
-    private $property;
-
-    /**
-     * @param Property $property
-     * @param $originValue
-     * @param $newValue
-     */
-    public function __construct(Property $property, $originValue, $newValue)
-    {
-        $this->property = $property;
-        $this->originValue = $originValue;
-        $this->newValue = $newValue;
-    }
+    public function getOriginValue();
 
     /**
      * @return mixed
      */
-    public function getOriginValue()
-    {
-        return $this->originValue;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getNewValue()
-    {
-        return $this->newValue;
-    }
+    public function getNewValue();
 
     /**
      * @return Property
      */
-    public function getProperty()
-    {
-        return $this->property;
-    }
+    public function getProperty();
 
     /**
-     * @param $propertyName
-     * @return bool
+     * @param string $propertyName
+     * @return mixed
      */
-    public function isFor($propertyName)
-    {
-        return $this->property->getName() === $propertyName;
-    }
+    public function isFor($propertyName);
 }
