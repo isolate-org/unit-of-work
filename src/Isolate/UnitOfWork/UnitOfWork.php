@@ -17,7 +17,7 @@ use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Entity\Definition;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UnitOfWork
 {
@@ -27,7 +27,7 @@ class UnitOfWork
     private $changeBuilder;
 
     /**
-     * @var EventDispatcher
+     * @var EventDispatcherInterface
      */
     private $eventDispatcher;
 
@@ -78,9 +78,9 @@ class UnitOfWork
 
     /**
      * @param InformationPoint $entityInformationPoint
-     * @param EventDispatcher $eventDispatcher
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public function __construct(InformationPoint $entityInformationPoint, EventDispatcher $eventDispatcher)
+    public function __construct(InformationPoint $entityInformationPoint, EventDispatcherInterface $eventDispatcher)
     {
         $this->entityInformationPoint = $entityInformationPoint;
         $this->eventDispatcher = $eventDispatcher;
