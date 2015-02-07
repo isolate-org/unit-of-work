@@ -224,6 +224,6 @@ final class ChangeBuilder
      */
     private function isTraversableArray($newValue)
     {
-        return is_array($newValue) && !$newValue instanceof \Traversable && !$newValue instanceof \ArrayAccess;
+        return is_array($newValue) || ($newValue instanceof \Traversable && $newValue instanceof \ArrayAccess);
     }
 }
