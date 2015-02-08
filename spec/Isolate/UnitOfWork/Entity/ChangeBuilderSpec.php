@@ -117,9 +117,9 @@ class ChangeBuilderSpec extends ObjectBehavior
         $changeSet->hasChangeFor("children")->shouldReturn(true);
         $change = $changeSet->getChangeFor("children");
         $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
-        $change->getNewElements()->shouldHaveCount(1);
-        $change->getRemovedElements()->shouldHaveCount(0);
-        $change->getEditedElements()->shouldHaveCount(0);
+        $change->getChangeForNewEntities()->shouldHaveCount(1);
+        $change->getChangesForRemovedEntities()->shouldHaveCount(0);
+        $change->getChangesForEditedEntities()->shouldHaveCount(0);
     }
 
     function it_build_change_for_many_entities_association_that_knows_which_entities_were_added_even_persisted()
@@ -132,9 +132,9 @@ class ChangeBuilderSpec extends ObjectBehavior
         $changeSet->hasChangeFor("children")->shouldReturn(true);
         $change = $changeSet->getChangeFor("children");
         $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
-        $change->getNewElements()->shouldHaveCount(1);
-        $change->getRemovedElements()->shouldHaveCount(0);
-        $change->getEditedElements()->shouldHaveCount(0);
+        $change->getChangeForNewEntities()->shouldHaveCount(1);
+        $change->getChangesForRemovedEntities()->shouldHaveCount(0);
+        $change->getChangesForEditedEntities()->shouldHaveCount(0);
     }
 
     function it_build_change_for_many_entities_association_that_knows_which_entities_were_removed()
@@ -147,9 +147,9 @@ class ChangeBuilderSpec extends ObjectBehavior
         $changeSet->hasChangeFor("children")->shouldReturn(true);
         $change = $changeSet->getChangeFor("children");
         $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
-        $change->getNewElements()->shouldHaveCount(0);
-        $change->getRemovedElements()->shouldHaveCount(1);
-        $change->getEditedElements()->shouldHaveCount(0);
+        $change->getChangeForNewEntities()->shouldHaveCount(0);
+        $change->getChangesForRemovedEntities()->shouldHaveCount(1);
+        $change->getChangesForEditedEntities()->shouldHaveCount(0);
     }
 
     function it_build_change_for_many_entities_association_that_knows_which_entities_were_edited()
@@ -162,9 +162,9 @@ class ChangeBuilderSpec extends ObjectBehavior
         $changeSet->hasChangeFor("children")->shouldReturn(true);
         $change = $changeSet->getChangeFor("children");
         $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
-        $change->getNewElements()->shouldHaveCount(0);
-        $change->getRemovedElements()->shouldHaveCount(0);
-        $change->getEditedElements()->shouldHaveCount(1);
+        $change->getChangeForNewEntities()->shouldHaveCount(0);
+        $change->getChangesForRemovedEntities()->shouldHaveCount(0);
+        $change->getChangesForEditedEntities()->shouldHaveCount(1);
     }
 
     function it_build_change_for_many_entities_association_that_has_new_edited_and_removed_elements()
@@ -183,9 +183,9 @@ class ChangeBuilderSpec extends ObjectBehavior
         $changeSet->hasChangeFor("children")->shouldReturn(true);
         $change = $changeSet->getChangeFor("children");
         $change->shouldBeAnInstanceOf("Isolate\\UnitOfWork\\Entity\\Value\\Change\\AssociatedCollection");
-        $change->getNewElements()->shouldHaveCount(1);
-        $change->getRemovedElements()->shouldHaveCount(1);
-        $change->getEditedElements()->shouldHaveCount(1);
+        $change->getChangeForNewEntities()->shouldHaveCount(1);
+        $change->getChangesForRemovedEntities()->shouldHaveCount(1);
+        $change->getChangeForNewEntities()->shouldHaveCount(1);
     }
 
     /**

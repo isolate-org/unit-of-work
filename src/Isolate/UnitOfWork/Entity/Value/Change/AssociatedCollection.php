@@ -68,9 +68,9 @@ final class AssociatedCollection implements Change
     }
 
     /**
-     * @return array|[]NewEntity
+     * @return array|NewEntity[]
      */
-    public function getNewElements()
+    public function getChangeForNewEntities()
     {
         $new = [];
         foreach ($this->changes as $change) {
@@ -83,9 +83,9 @@ final class AssociatedCollection implements Change
     }
 
     /**
-     * @return array|[]NewEntity
+     * @return array|RemovedEntity[]
      */
-    public function getRemovedElements()
+    public function getChangesForRemovedEntities()
     {
         $removed = [];
         foreach ($this->changes as $change) {
@@ -98,9 +98,9 @@ final class AssociatedCollection implements Change
     }
 
     /**
-     * @return array|[]NewEntity
+     * @return array|EditedEntity[]
      */
-    public function getEditedElements()
+    public function getChangesForEditedEntities()
     {
         $edited = [];
         foreach ($this->changes as $change) {
