@@ -2,8 +2,6 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
-use Isolate\UnitOfWork\Entity\ChangeBuilder;
-use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
@@ -12,6 +10,9 @@ use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\EntityStates;
 use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Object\InMemoryRegistry;
+use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use Isolate\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
@@ -193,6 +194,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     private function createUnitOfWork()
     {
         return new UnitOfWork(
+            new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
             new InformationPoint([$this->createFakeEntityDefinition()]),
             new EventDispatcher()
         );

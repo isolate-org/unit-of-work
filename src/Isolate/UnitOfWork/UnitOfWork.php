@@ -5,7 +5,7 @@ namespace Isolate\UnitOfWork;
 use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\InformationPoint;
-use Isolate\UnitOfWork\Object\Cloner\Adapter\DeepCopy\Cloner;
+use Isolate\UnitOfWork\Object\Registry;
 use Isolate\UnitOfWork\Command\EditCommand;
 use Isolate\UnitOfWork\Command\NewCommand;
 use Isolate\UnitOfWork\Command\RemoveCommand;
@@ -15,12 +15,16 @@ use Isolate\UnitOfWork\Event\PreRegister;
 use Isolate\UnitOfWork\Event\PreRemove;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
-use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Entity\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UnitOfWork
 {
+    /**
+     * @var Registry
+     */
+    private $registry;
+
     /**
      * @var ChangeBuilder
      */
@@ -35,31 +39,6 @@ class UnitOfWork
      * @var InformationPoint
      */
     private $entityInformationPoint;
-
-    /**
-     * @var Cloner
-     */
-    private $cloner;
-
-    /**
-     * @var RecoveryPoint
-     */
-    private $objectRecoveryPoint;
-
-    /**
-     * @var array
-     */
-    private $removedEntities;
-
-    /**
-     * @var array
-     */
-    private $entities;
-
-    /**
-     * @var array
-     */
-    private $originEntities;
 
     /**
      * @var int
@@ -77,20 +56,17 @@ class UnitOfWork
     private $totalRemovedEntities;
 
     /**
+     * @param Registry $registry
      * @param InformationPoint $entityInformationPoint
      * @param EventDispatcherInterface $eventDispatcher
      */
-    public function __construct(InformationPoint $entityInformationPoint, EventDispatcherInterface $eventDispatcher)
+    public function __construct(Registry $registry, InformationPoint $entityInformationPoint, EventDispatcherInterface $eventDispatcher)
     {
+        $this->registry = $registry;
         $this->entityInformationPoint = $entityInformationPoint;
         $this->eventDispatcher = $eventDispatcher;
         $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
         $this->comparer = new Comparer();
-        $this->objectRecoveryPoint = new RecoveryPoint();
-        $this->cloner = new Cloner();
-        $this->removedEntities = [];
-        $this->entities = [];
-        $this->originEntities = [];
         $this->totalNewEntities = 0;
         $this->totalEditedEntities = 0;
         $this->totalRemovedEntities = 0;
@@ -115,10 +91,7 @@ class UnitOfWork
         $this->eventDispatcher->dispatch(Events::PRE_REGISTER_ENTITY, $event);
         $entity = $event->getEntity();
 
-        $hash = spl_object_hash($entity);
-
-        $this->entities[$hash] = $entity;
-        $this->originEntities[$hash] = $this->cloner->cloneObject($entity);
+        $this->registry->register($entity);
     }
 
     /**
@@ -127,7 +100,7 @@ class UnitOfWork
      */
     public function isRegistered($entity)
     {
-        return array_key_exists(spl_object_hash($entity), $this->entities);
+        return $this->registry->isRegistered($entity);
     }
 
     /**
@@ -150,7 +123,7 @@ class UnitOfWork
             throw new RuntimeException("Object need to be registered first in the Unit of Work.");
         }
 
-        if ($this->wasRemoved($entity)) {
+        if ($this->registry->isRemoved($entity)) {
             return EntityStates::REMOVED_ENTITY;
         }
 
@@ -185,22 +158,17 @@ class UnitOfWork
             if (!$this->entityInformationPoint->isPersisted($entity)) {
                 throw new RuntimeException("Unit of Work can't remove not persisted entities.");
             }
-
-            $this->register($entity);
         }
 
-        $this->removedEntities[spl_object_hash($entity)] = $entity;
+        $this->registry->remove($entity);
     }
 
     public function commit()
     {
-        $removedEntitiesHashes = [];
         $this->countEntities();
-
         $this->eventDispatcher->dispatch(Events::PRE_COMMIT);
 
-        foreach ($this->entities as $entityHash => $entity) {
-            $originEntity = $this->originEntities[$entityHash];
+        foreach ($this->registry->all() as $entity) {
             $entityClassDefinition = $this->entityInformationPoint->getDefinition($entity);
 
             $commandResult = null;
@@ -209,10 +177,9 @@ class UnitOfWork
                     $commandResult = $this->handleNewObject($entityClassDefinition, $entity);
                     break;
                 case EntityStates::EDITED_ENTITY:
-                    $commandResult = $this->handleEditedObject($entityClassDefinition, $entity, $originEntity);
+                    $commandResult = $this->handleEditedObject($entityClassDefinition, $entity, $this->registry->getSnapshot($entity));
                     break;
                 case EntityStates::REMOVED_ENTITY:
-                    $removedEntitiesHashes[] = $entityHash;
                     $commandResult = $this->handleRemovedObject($entityClassDefinition, $entity);
                     break;
             }
@@ -224,20 +191,15 @@ class UnitOfWork
             }
         }
 
-        $this->unregisterEntities($removedEntitiesHashes);
-        $this->updateEntitiesStates();
+        $this->registry->cleanRemoved();
+        $this->registry->makeNewSnapshots();
 
         $this->eventDispatcher->dispatch(Events::POST_COMMIT, new PostCommit());
-        unset($removedEntitiesHashes);
     }
 
     public function rollback()
     {
-        foreach ($this->originEntities as $hash => $originEntity) {
-            $this->objectRecoveryPoint->recover($this->entities[$hash], $originEntity);
-        }
-
-        $this->removedEntities = [];
+        $this->registry->reset();
     }
 
     /**
@@ -289,33 +251,13 @@ class UnitOfWork
         }
     }
 
-    /**
-     * @param $removedEntitiesHashes
-     */
-    private function unregisterEntities($removedEntitiesHashes)
-    {
-        foreach ($removedEntitiesHashes as $hash) {
-            unset($this->removedEntities[$hash]);
-            unset($this->entities[$hash]);
-            unset($this->originEntities[$hash]);
-        }
-    }
-
-    private function updateEntitiesStates()
-    {
-        $this->removedEntities = [];
-        foreach ($this->entities as $entityHash => $entity) {
-            $this->originEntities[$entityHash] = $this->cloner->cloneObject($entity);
-        }
-    }
-
     private function countEntities()
     {
         $this->totalNewEntities = 0;
         $this->totalEditedEntities = 0;
         $this->totalRemovedEntities = 0;
 
-        foreach ($this->entities as $entity) {
+        foreach ($this->registry->all() as $entity) {
             switch($this->getEntityState($entity)) {
                 case EntityStates::NEW_ENTITY:
                     $this->totalNewEntities++;
@@ -340,17 +282,8 @@ class UnitOfWork
         return !$this->comparer->areEqual(
             $this->entityInformationPoint->getDefinition($entity),
             $entity,
-            $this->originEntities[spl_object_hash($entity)]
+            $this->registry->getSnapshot($entity)
         );
-    }
-
-    /**
-     * @param $entity
-     * @return bool
-     */
-    private function wasRemoved($entity)
-    {
-        return array_key_exists(spl_object_hash($entity), $this->removedEntities);
     }
 
     /**

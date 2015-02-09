@@ -10,6 +10,9 @@ use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\EntityStates;
 use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Object\InMemoryRegistry;
+use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -26,7 +29,8 @@ class UnitOfWorkSpec extends ObjectBehavior
         $definition->setObserved([new Property("firstName"), new Property("lastName"), new Property("items")]);
 
         $entityInformationPoint = new InformationPoint([$definition]);
-        $this->beConstructedWith($entityInformationPoint, $eventDispatcher);
+        $registry = new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint());
+        $this->beConstructedWith($registry, $entityInformationPoint, $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()

@@ -2,13 +2,14 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
-use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Entity\Definition\Property;
-use Isolate\UnitOfWork\Entity\Property\ValueComparer;
+use Isolate\UnitOfWork\Object\InMemoryRegistry;
+use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\BatchEditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchNewCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\BatchRemoveCommandHandlerMock;
@@ -187,7 +188,10 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork(array $classDefinitions = [])
     {
-        $informationPoint = new InformationPoint($classDefinitions);
-        return new UnitOfWork($informationPoint, new EventDispatcher());
+        return new UnitOfWork(
+            new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
+            new InformationPoint($classDefinitions),
+            new EventDispatcher()
+        );
     }
 }
