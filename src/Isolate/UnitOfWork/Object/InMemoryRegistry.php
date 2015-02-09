@@ -10,6 +10,11 @@ class InMemoryRegistry implements Registry
     private $snapshotMaker;
 
     /**
+     * @var RecoveryPoint
+     */
+    private $recoveryPoint;
+
+    /**
      * @var array
      */
     private $objects;
@@ -25,20 +30,16 @@ class InMemoryRegistry implements Registry
     private $removed;
 
     /**
-     * @var RecoveryPoint
-     */
-    private $recoveryPoint;
-
-    /**
      * @param SnapshotMaker $snapshotMaker
+     * @param RecoveryPoint $recoveryPoint
      */
     public function __construct(SnapshotMaker $snapshotMaker, RecoveryPoint $recoveryPoint)
     {
         $this->snapshotMaker = $snapshotMaker;
+        $this->recoveryPoint = $recoveryPoint;
         $this->objects = [];
         $this->snapshots = [];
         $this->removed = [];
-        $this->recoveryPoint = $recoveryPoint;
     }
 
     /**
@@ -118,7 +119,7 @@ class InMemoryRegistry implements Registry
     }
 
     /**
-     * Clean removed entities and restore registered from snapshots.
+     * {@inheritdoc}
      */
     public function reset()
     {
