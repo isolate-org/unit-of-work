@@ -3,6 +3,7 @@
 namespace Isolate\UnitOfWork\Tests;
 
 use Isolate\UnitOfWork\Entity\ClassName;
+use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Event\PostCommit;
 use Isolate\UnitOfWork\Event\PreGetState;
@@ -134,6 +135,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
             new InformationPoint([$this->createFakeEntityDefinition()]),
+            new Comparer(),
             $this->eventDispatcher
         );
     }

@@ -2,6 +2,7 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
+use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
@@ -191,6 +192,7 @@ class BatchCommandHandlerTest extends \PHPUnit_Framework_TestCase
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
             new InformationPoint($classDefinitions),
+            new Comparer(),
             new EventDispatcher()
         );
     }

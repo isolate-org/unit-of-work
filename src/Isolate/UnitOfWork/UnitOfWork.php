@@ -59,14 +59,19 @@ class UnitOfWork
      * @param Registry $registry
      * @param InformationPoint $entityInformationPoint
      * @param EventDispatcherInterface $eventDispatcher
+     * @param Comparer $entityComparer
      */
-    public function __construct(Registry $registry, InformationPoint $entityInformationPoint, EventDispatcherInterface $eventDispatcher)
-    {
+    public function __construct(
+        Registry $registry,
+        InformationPoint $entityInformationPoint,
+        Comparer $entityComparer,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         $this->registry = $registry;
         $this->entityInformationPoint = $entityInformationPoint;
         $this->eventDispatcher = $eventDispatcher;
         $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
-        $this->comparer = new Comparer();
+        $this->comparer = $entityComparer;
         $this->totalNewEntities = 0;
         $this->totalEditedEntities = 0;
         $this->totalRemovedEntities = 0;

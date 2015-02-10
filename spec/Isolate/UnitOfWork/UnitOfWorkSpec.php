@@ -2,6 +2,7 @@
 
 namespace spec\Isolate\UnitOfWork;
 
+use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
@@ -30,7 +31,7 @@ class UnitOfWorkSpec extends ObjectBehavior
 
         $entityInformationPoint = new InformationPoint([$definition]);
         $registry = new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint());
-        $this->beConstructedWith($registry, $entityInformationPoint, $eventDispatcher);
+        $this->beConstructedWith($registry, $entityInformationPoint, new Comparer(), $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()
