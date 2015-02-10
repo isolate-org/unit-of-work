@@ -2,11 +2,11 @@
 
 namespace Isolate\UnitOfWork\Object;
 
-interface Cloner
+interface SnapshotMaker
 {
     /**
      * @param mixed $object
      * @return mixed
      */
-    public function cloneObject($object);
+    public function makeSnapshotOf($object);
 }

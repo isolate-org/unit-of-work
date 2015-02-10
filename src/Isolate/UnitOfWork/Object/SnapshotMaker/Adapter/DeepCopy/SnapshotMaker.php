@@ -1,12 +1,12 @@
 <?php
 
-namespace Isolate\UnitOfWork\Object\Cloner\Adapter\DeepCopy;
+namespace Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy;
 
 use DeepCopy\DeepCopy;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
-use Isolate\UnitOfWork\Object\Cloner as BaseCloner;
+use Isolate\UnitOfWork\Object\SnapshotMaker as BaseSnapshotMaker;
 
-class Cloner implements BaseCloner
+class SnapshotMaker implements BaseSnapshotMaker
 {
     /**
      * @var DeepCopy
@@ -23,7 +23,7 @@ class Cloner implements BaseCloner
      * @return mixed
      * @throws InvalidArgumentException
      */
-    public function cloneObject($object)
+    public function makeSnapshotOf($object)
     {
         if (!is_object($object)) {
             throw new InvalidArgumentException("Only object can be cloned.");
