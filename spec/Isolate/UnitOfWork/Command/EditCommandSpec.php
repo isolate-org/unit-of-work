@@ -16,7 +16,7 @@ class EditCommandSpec extends ObjectBehavior
     {
         $entity = new EntityFake(1, "Norbert", "Orzechowicz");
         $changes = new ChangeSet([new ScalarChange(new Property("firstName"), "Norbert", "Michal")]);
-        $this->beConstructedWith($entity, $changes, 1);
+        $this->beConstructedWith($entity, $changes);
         $this->getEntity()->shouldReturn($entity);
         $this->getChanges()->shouldReturn($changes);
     }
