@@ -26,19 +26,14 @@ class UnitOfWork
     private $registry;
 
     /**
-     * @var ChangeBuilder
-     */
-    private $changeBuilder;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
      * @var Identifier
      */
     private $identifier;
+
+    /**
+     * @var ChangeBuilder
+     */
+    private $changeBuilder;
 
     /**
      * @var CommandBus
@@ -46,24 +41,29 @@ class UnitOfWork
     private $commandBus;
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * @param Registry $registry
-     * @param ChangeBuilder $changeBuilder
      * @param Identifier $identifier
+     * @param ChangeBuilder $changeBuilder
      * @param Comparer $entityComparer
      * @param CommandBus $commandBus
      * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         Registry $registry,
-        ChangeBuilder $changeBuilder,
         Identifier $identifier,
+        ChangeBuilder $changeBuilder,
         Comparer $entityComparer,
         CommandBus $commandBus,
         EventDispatcherInterface $eventDispatcher
     ) {
         $this->registry = $registry;
-        $this->changeBuilder = $changeBuilder;
         $this->identifier = $identifier;
+        $this->changeBuilder = $changeBuilder;
         $this->comparer = $entityComparer;
         $this->commandBus = $commandBus;
         $this->eventDispatcher = $eventDispatcher;

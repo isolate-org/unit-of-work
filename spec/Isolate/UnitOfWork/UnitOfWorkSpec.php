@@ -13,7 +13,6 @@ use Isolate\UnitOfWork\Entity\Identifier\Symfony\PropertyAccessorIdentifier;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\EntityStates;
-use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Object\InMemoryRegistry;
 use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
@@ -34,11 +33,17 @@ class UnitOfWorkSpec extends ObjectBehavior
 
         $definitions = new Definition\Repository\InMemory([$definition]);
 
-        $entityInformationPoint = new InformationPoint($definitions);
         $identifier = new PropertyAccessorIdentifier($definitions);
         $registry = new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint());
         $commandBus = new SilentBus($definitions);
-        $this->beConstructedWith($registry, new ChangeBuilder($entityInformationPoint), $identifier, new Comparer($definitions), $commandBus,  $eventDispatcher);
+        $this->beConstructedWith(
+            $registry,
+            $identifier,
+            new ChangeBuilder($definitions, $identifier),
+            new Comparer($definitions),
+            $commandBus,
+            $eventDispatcher
+        );
     }
 
     function it_throw_exception_during_non_object_registration()

@@ -4,6 +4,7 @@ namespace Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Entity\Definition\Association;
 use Isolate\UnitOfWork\Entity\Definition\Property;
+use Isolate\UnitOfWork\Entity\Definition\Repository;
 use Isolate\UnitOfWork\Entity\Property\ValueComparer;
 use Isolate\UnitOfWork\Entity\Value\Change\AssociatedCollection;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
@@ -27,18 +28,25 @@ final class ChangeBuilder
     private $propertyValueComparer;
 
     /**
-     * @var InformationPoint
+     * @var Repository
      */
-    private $informationPoint;
+    private $definitions;
 
     /**
-     * @param InformationPoint $informationPoint
+     * @var Identifier
      */
-    public function __construct(InformationPoint $informationPoint)
+    private $identifier;
+
+    /**
+     * @param Repository $definitions
+     * @param Identifier $identifier
+     */
+    public function __construct(Repository $definitions, Identifier $identifier)
     {
         $this->propertyAccessor = new PropertyAccessor();
         $this->propertyValueComparer = new ValueComparer();
-        $this->informationPoint = $informationPoint;
+        $this->definitions = $definitions;
+        $this->identifier = $identifier;
     }
 
     /**
@@ -50,7 +58,7 @@ final class ChangeBuilder
     public function buildChanges($oldEntity, $newEntity)
     {
         $changes = [];
-        $entityDefinition = $this->informationPoint->getDefinition($oldEntity);
+        $entityDefinition = $this->definitions->getDefinition($oldEntity);
         foreach ($entityDefinition->getObservedProperties() as $property) {
             if ($this->isDifferent($property, $oldEntity, $newEntity)) {
                 $oldValue = $this->propertyAccessor->getValue($oldEntity, $property->getName());
@@ -114,7 +122,7 @@ final class ChangeBuilder
         if (is_null($oldValue)) {
             $this->validateAssociatedEntity($property, $newValue);
 
-            return new NewEntity($property, $newValue, $this->informationPoint->isPersisted($newValue));
+            return new NewEntity($property, $newValue, $this->identifier->isPersisted($newValue));
         }
 
         return new EditedEntity(
@@ -151,12 +159,12 @@ final class ChangeBuilder
         foreach ($newValue as $newElement) {
             $this->validateAssociatedEntity($property, $newElement);
 
-            if (!$this->informationPoint->isPersisted($newElement)) {
+            if (!$this->identifier->isPersisted($newElement)) {
                 $changes[] = new NewEntity($property, $newElement, false);
                 continue;
             }
 
-            $identity = $this->informationPoint->getIdentity($newElement);
+            $identity = $this->identifier->getIdentity($newElement);
             $newPersistedArray[$identity] = $newElement;
 
             if (array_key_exists($identity, $oldPersistedArray)) {
@@ -194,7 +202,7 @@ final class ChangeBuilder
 
         $result = [];
         foreach ($traversableArray as $valueElement) {
-            $result[$this->informationPoint->getIdentity($valueElement)] = $valueElement;
+            $result[$this->identifier->getIdentity($valueElement)] = $valueElement;
         }
 
         return $result;

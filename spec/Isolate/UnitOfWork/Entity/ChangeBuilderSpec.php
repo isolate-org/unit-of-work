@@ -4,7 +4,7 @@ namespace spec\Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition;
-use Isolate\UnitOfWork\Entity\InformationPoint;
+use Isolate\UnitOfWork\Entity\Identifier;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Tests\Double\AssociatedEntityFake;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
@@ -13,22 +13,22 @@ use Prophecy\Argument;
 
 class ChangeBuilderSpec extends ObjectBehavior
 {
-    function let(InformationPoint $informationPoint)
+    function let(Definition\Repository $definitions, Identifier $identifier)
     {
-        $informationPoint->getDefinition(Argument::type(EntityFake::getClassName()))
+        $definitions->getDefinition(Argument::type(EntityFake::getClassName()))
             ->willReturn($this->createEntityDefinition());
-        $informationPoint->getDefinition(Argument::type(AssociatedEntityFake::getClassName()))
+        $definitions->getDefinition(Argument::type(AssociatedEntityFake::getClassName()))
             ->willReturn($this->createAssociatedEntityDefinition());
 
-        $informationPoint->isPersisted(Argument::any())->will(function ($args) {
+        $identifier->isPersisted(Argument::any())->will(function ($args) {
             return !is_null($args[0]->getId());
         });
 
-        $informationPoint->getIdentity(Argument::any())->will(function ($args) {
+        $identifier->getIdentity(Argument::any())->will(function ($args) {
             return $args[0]->getId();
         });
 
-        $this->beConstructedWith($informationPoint);
+        $this->beConstructedWith($definitions, $identifier);
     }
 
     function it_build_change_for_different_objects()

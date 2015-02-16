@@ -16,7 +16,6 @@ use Isolate\UnitOfWork\Events;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\EntityStates;
-use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Object\InMemoryRegistry;
 use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
@@ -136,10 +135,12 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
     private function createUnitOfWork()
     {
         $definitions = new Definition\Repository\InMemory([$this->createFakeEntityDefinition()]);
+        $identifier = new PropertyAccessorIdentifier($definitions);
+
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
-            new ChangeBuilder(new InformationPoint($definitions)),
-            new PropertyAccessorIdentifier($definitions),
+            $identifier,
+            new ChangeBuilder($definitions, $identifier),
             new Comparer($definitions),
             new SilentBus($definitions),
             $this->eventDispatcher
