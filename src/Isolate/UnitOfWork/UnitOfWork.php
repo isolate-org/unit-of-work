@@ -41,21 +41,6 @@ class UnitOfWork
     private $entityInformationPoint;
 
     /**
-     * @var int
-     */
-    private $totalNewEntities;
-
-    /**
-     * @var int
-     */
-    private $totalEditedEntities;
-
-    /**
-     * @var int
-     */
-    private $totalRemovedEntities;
-
-    /**
      * @param Registry $registry
      * @param InformationPoint $entityInformationPoint
      * @param EventDispatcherInterface $eventDispatcher
@@ -72,9 +57,6 @@ class UnitOfWork
         $this->eventDispatcher = $eventDispatcher;
         $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
         $this->comparer = $entityComparer;
-        $this->totalNewEntities = 0;
-        $this->totalEditedEntities = 0;
-        $this->totalRemovedEntities = 0;
     }
 
     /**
@@ -170,7 +152,6 @@ class UnitOfWork
 
     public function commit()
     {
-        $this->countEntities();
         $this->eventDispatcher->dispatch(Events::PRE_COMMIT);
 
         foreach ($this->registry->all() as $entity) {
@@ -215,7 +196,7 @@ class UnitOfWork
     {
         if ($entityClassDefinition->hasNewCommandHandler()) {
             return $entityClassDefinition->getNewCommandHandler()->handle(
-                new NewCommand($entity, $this->totalNewEntities)
+                new NewCommand($entity)
             );
         }
     }
@@ -229,17 +210,10 @@ class UnitOfWork
     private function handleEditedObject(Definition $entityClassDefinition, $entity, $originEntity)
     {
         if ($entityClassDefinition->hasEditCommandHandler()) {
-            $changeSet = $this->changeBuilder->buildChanges(
-                $originEntity,
-                $entity
-            );
+            $changeSet = $this->changeBuilder->buildChanges($originEntity, $entity);
 
             return $entityClassDefinition->getEditCommandHandler()
-                ->handle(new EditCommand(
-                    $entity,
-                    $changeSet,
-                    $this->totalEditedEntities
-                ));
+                ->handle(new EditCommand($entity, $changeSet));
         }
     }
 
@@ -252,28 +226,7 @@ class UnitOfWork
     {
         if ($entityClassDefinition->hasRemoveCommandHandler()) {
             return $entityClassDefinition->getRemoveCommandHandler()
-                ->handle(new RemoveCommand($entity, $this->totalRemovedEntities));
-        }
-    }
-
-    private function countEntities()
-    {
-        $this->totalNewEntities = 0;
-        $this->totalEditedEntities = 0;
-        $this->totalRemovedEntities = 0;
-
-        foreach ($this->registry->all() as $entity) {
-            switch($this->getEntityState($entity)) {
-                case EntityStates::NEW_ENTITY:
-                    $this->totalNewEntities++;
-                    break;
-                case EntityStates::EDITED_ENTITY:
-                    $this->totalEditedEntities++;
-                    break;
-                case EntityStates::REMOVED_ENTITY:
-                    $this->totalRemovedEntities++;
-                    break;
-            }
+                ->handle(new RemoveCommand($entity));
         }
     }
 

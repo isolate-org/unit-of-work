@@ -12,7 +12,7 @@ class RemoveCommandSpec extends ObjectBehavior
     function it_has_entity_that_should_be_persisted()
     {
         $entity = new EntityFake();
-        $this->beConstructedWith($entity, 1);
+        $this->beConstructedWith($entity);
         $this->getEntity()->shouldReturn($entity);
     }
 
