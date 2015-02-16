@@ -5,6 +5,7 @@ namespace Isolate\UnitOfWork\Tests;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition\Property;
+use Isolate\UnitOfWork\Entity\Identifier\Symfony\PropertyAccessorIdentifier;
 use Isolate\UnitOfWork\Event\PostCommit;
 use Isolate\UnitOfWork\Event\PreGetState;
 use Isolate\UnitOfWork\Event\PreRegister;
@@ -136,6 +137,7 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
             new InformationPoint($definitions),
+            new PropertyAccessorIdentifier($definitions),
             new Comparer($definitions),
             $this->eventDispatcher
         );

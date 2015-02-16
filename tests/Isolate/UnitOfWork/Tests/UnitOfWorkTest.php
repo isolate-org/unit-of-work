@@ -3,6 +3,7 @@
 namespace Isolate\UnitOfWork\Tests;
 
 use Isolate\UnitOfWork\Entity\Comparer;
+use Isolate\UnitOfWork\Entity\Identifier\Symfony\PropertyAccessorIdentifier;
 use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
@@ -199,6 +200,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
             new InformationPoint($definitions),
+            new PropertyAccessorIdentifier($definitions),
             new Comparer($definitions),
             new EventDispatcher()
         );

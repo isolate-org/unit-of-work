@@ -4,6 +4,7 @@ namespace Isolate\UnitOfWork;
 
 use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Comparer;
+use Isolate\UnitOfWork\Entity\Identifier;
 use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Object\Registry;
 use Isolate\UnitOfWork\Command\EditCommand;
@@ -41,14 +42,21 @@ class UnitOfWork
     private $entityInformationPoint;
 
     /**
+     * @var Identifier
+     */
+    private $identifier;
+
+    /**
      * @param Registry $registry
      * @param InformationPoint $entityInformationPoint
-     * @param EventDispatcherInterface $eventDispatcher
+     * @param Identifier $identifier
      * @param Comparer $entityComparer
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         Registry $registry,
         InformationPoint $entityInformationPoint,
+        Identifier $identifier,
         Comparer $entityComparer,
         EventDispatcherInterface $eventDispatcher
     ) {
@@ -57,6 +65,7 @@ class UnitOfWork
         $this->eventDispatcher = $eventDispatcher;
         $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
         $this->comparer = $entityComparer;
+        $this->identifier = $identifier;
     }
 
     /**
@@ -114,7 +123,7 @@ class UnitOfWork
             return EntityStates::REMOVED_ENTITY;
         }
 
-        if (!$this->isPersisted($entity)) {
+        if (!$this->identifier->isPersisted($entity)) {
             return EntityStates::NEW_ENTITY;
         }
 
@@ -241,15 +250,5 @@ class UnitOfWork
             $entity,
             $this->registry->getSnapshot($entity)
         );
-    }
-
-    /**
-     * @param $entity
-     * @return bool
-     * @throws Exception\InvalidPropertyPathException
-     */
-    private function isPersisted($entity)
-    {
-        return $this->entityInformationPoint->isPersisted($entity);
     }
 }
