@@ -2,6 +2,8 @@
 
 namespace spec\Isolate\UnitOfWork;
 
+use Isolate\UnitOfWork\CommandBus\SilentBus;
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
@@ -35,7 +37,8 @@ class UnitOfWorkSpec extends ObjectBehavior
         $entityInformationPoint = new InformationPoint($definitions);
         $identifier = new PropertyAccessorIdentifier($definitions);
         $registry = new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint());
-        $this->beConstructedWith($registry, $entityInformationPoint, $identifier, new Comparer($definitions), $eventDispatcher);
+        $commandBus = new SilentBus($definitions);
+        $this->beConstructedWith($registry, new ChangeBuilder($entityInformationPoint), $identifier, new Comparer($definitions), $commandBus,  $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()

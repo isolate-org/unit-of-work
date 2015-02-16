@@ -2,6 +2,8 @@
 
 namespace Isolate\UnitOfWork\Tests;
 
+use Isolate\UnitOfWork\CommandBus\SilentBus;
+use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Definition\Property;
@@ -136,9 +138,10 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
         $definitions = new Definition\Repository\InMemory([$this->createFakeEntityDefinition()]);
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
-            new InformationPoint($definitions),
+            new ChangeBuilder(new InformationPoint($definitions)),
             new PropertyAccessorIdentifier($definitions),
             new Comparer($definitions),
+            new SilentBus($definitions),
             $this->eventDispatcher
         );
     }

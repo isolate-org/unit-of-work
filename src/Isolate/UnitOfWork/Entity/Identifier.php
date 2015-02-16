@@ -5,6 +5,12 @@ namespace Isolate\UnitOfWork\Entity;
 interface Identifier
 {
     /**
+     * @param $object
+     * @return boolean
+     */
+    public function isEntity($object);
+
+    /**
      * @param mixed $entity
      * @return bool
      */

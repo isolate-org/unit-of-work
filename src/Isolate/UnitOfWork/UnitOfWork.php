@@ -5,7 +5,6 @@ namespace Isolate\UnitOfWork;
 use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Comparer;
 use Isolate\UnitOfWork\Entity\Identifier;
-use Isolate\UnitOfWork\Entity\InformationPoint;
 use Isolate\UnitOfWork\Object\Registry;
 use Isolate\UnitOfWork\Command\EditCommand;
 use Isolate\UnitOfWork\Command\NewCommand;
@@ -37,35 +36,37 @@ class UnitOfWork
     private $eventDispatcher;
 
     /**
-     * @var InformationPoint
-     */
-    private $entityInformationPoint;
-
-    /**
      * @var Identifier
      */
     private $identifier;
 
     /**
+     * @var CommandBus
+     */
+    private $commandBus;
+
+    /**
      * @param Registry $registry
-     * @param InformationPoint $entityInformationPoint
+     * @param ChangeBuilder $changeBuilder
      * @param Identifier $identifier
      * @param Comparer $entityComparer
+     * @param CommandBus $commandBus
      * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         Registry $registry,
-        InformationPoint $entityInformationPoint,
+        ChangeBuilder $changeBuilder,
         Identifier $identifier,
         Comparer $entityComparer,
+        CommandBus $commandBus,
         EventDispatcherInterface $eventDispatcher
     ) {
         $this->registry = $registry;
-        $this->entityInformationPoint = $entityInformationPoint;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->changeBuilder = new ChangeBuilder($entityInformationPoint);
-        $this->comparer = $entityComparer;
+        $this->changeBuilder = $changeBuilder;
         $this->identifier = $identifier;
+        $this->comparer = $entityComparer;
+        $this->commandBus = $commandBus;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -79,7 +80,7 @@ class UnitOfWork
             throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
         }
 
-        if (!$this->entityInformationPoint->hasDefinition($entity)) {
+        if (!$this->identifier->isEntity($entity)) {
             throw new InvalidArgumentException("Only entities can be registered in Unit of Work.");
         }
 
@@ -151,7 +152,7 @@ class UnitOfWork
         $entity = $event->getEntity();
 
         if (!$this->isRegistered($entity)) {
-            if (!$this->entityInformationPoint->isPersisted($entity)) {
+            if (!$this->identifier->isPersisted($entity)) {
                 throw new RuntimeException("Unit of Work can't remove not persisted entities.");
             }
         }
@@ -164,18 +165,18 @@ class UnitOfWork
         $this->eventDispatcher->dispatch(Events::PRE_COMMIT);
 
         foreach ($this->registry->all() as $entity) {
-            $entityClassDefinition = $this->entityInformationPoint->getDefinition($entity);
 
             $commandResult = null;
             switch($this->getEntityState($entity)) {
                 case EntityStates::NEW_ENTITY:
-                    $commandResult = $this->handleNewObject($entityClassDefinition, $entity);
+                    $commandResult = $this->commandBus->dispatch(new NewCommand($entity));
                     break;
                 case EntityStates::EDITED_ENTITY:
-                    $commandResult = $this->handleEditedObject($entityClassDefinition, $entity, $this->registry->getSnapshot($entity));
+                    $changeSet = $this->changeBuilder->buildChanges($this->registry->getSnapshot($entity), $entity);
+                    $commandResult = $this->commandBus->dispatch(new EditCommand($entity, $changeSet));
                     break;
                 case EntityStates::REMOVED_ENTITY:
-                    $commandResult = $this->handleRemovedObject($entityClassDefinition, $entity);
+                    $commandResult = $this->commandBus->dispatch(new RemoveCommand($entity));
                     break;
             }
 
@@ -195,48 +196,6 @@ class UnitOfWork
     public function rollback()
     {
         $this->registry->reset();
-    }
-
-    /**
-     * @param $entityClassDefinition
-     * @param $entity
-     */
-    private function handleNewObject(Definition $entityClassDefinition, $entity)
-    {
-        if ($entityClassDefinition->hasNewCommandHandler()) {
-            return $entityClassDefinition->getNewCommandHandler()->handle(
-                new NewCommand($entity)
-            );
-        }
-    }
-
-    /**
-     * @param $entityClassDefinition
-     * @param $entity
-     * @param $originEntity
-     * @throws RuntimeException
-     */
-    private function handleEditedObject(Definition $entityClassDefinition, $entity, $originEntity)
-    {
-        if ($entityClassDefinition->hasEditCommandHandler()) {
-            $changeSet = $this->changeBuilder->buildChanges($originEntity, $entity);
-
-            return $entityClassDefinition->getEditCommandHandler()
-                ->handle(new EditCommand($entity, $changeSet));
-        }
-    }
-
-    /**
-     * @param $entityClassDefinition
-     * @param $entity
-     * @throws RuntimeException
-     */
-    private function handleRemovedObject(Definition $entityClassDefinition, $entity)
-    {
-        if ($entityClassDefinition->hasRemoveCommandHandler()) {
-            return $entityClassDefinition->getRemoveCommandHandler()
-                ->handle(new RemoveCommand($entity));
-        }
     }
 
     /**

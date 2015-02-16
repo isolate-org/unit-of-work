@@ -4,7 +4,7 @@ namespace Isolate\UnitOfWork\Command;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
-final class NewCommand
+final class NewCommand implements Command
 {
     /**
      * @var mixed

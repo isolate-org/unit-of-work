@@ -5,7 +5,7 @@ namespace Isolate\UnitOfWork\Command;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
-final class EditCommand
+final class EditCommand implements Command
 {
     /**
      * @var mixed

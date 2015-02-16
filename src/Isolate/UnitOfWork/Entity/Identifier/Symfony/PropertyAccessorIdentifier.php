@@ -25,6 +25,15 @@ class PropertyAccessorIdentifier implements Identifier
     }
 
     /**
+     * @param $object
+     * @return boolean
+     */
+    public function isEntity($object)
+    {
+        return $this->definitions->hasDefinition($object);
+    }
+
+    /**
      * @param mixed $entity
      * @return bool
      * @throws InvalidPropertyPathException
