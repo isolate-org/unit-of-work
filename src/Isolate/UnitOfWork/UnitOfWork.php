@@ -238,7 +238,6 @@ class UnitOfWork
     private function isChanged($entity)
     {
         return !$this->comparer->areEqual(
-            $this->entityInformationPoint->getDefinition($entity),
             $entity,
             $this->registry->getSnapshot($entity)
         );

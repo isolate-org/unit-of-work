@@ -29,9 +29,11 @@ class UnitOfWorkSpec extends ObjectBehavior
         );
         $definition->setObserved([new Property("firstName"), new Property("lastName"), new Property("items")]);
 
-        $entityInformationPoint = new InformationPoint([$definition]);
+        $definitions = new Definition\Repository\InMemory([$definition]);
+
+        $entityInformationPoint = new InformationPoint($definitions);
         $registry = new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint());
-        $this->beConstructedWith($registry, $entityInformationPoint, new Comparer(), $eventDispatcher);
+        $this->beConstructedWith($registry, $entityInformationPoint, new Comparer($definitions), $eventDispatcher);
     }
 
     function it_throw_exception_during_non_object_registration()

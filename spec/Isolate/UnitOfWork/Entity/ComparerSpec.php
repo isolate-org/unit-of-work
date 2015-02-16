@@ -10,12 +10,20 @@ use Prophecy\Argument;
 
 class ComparerSpec extends ObjectBehavior
 {
+    function let(Definition\Repository $definitions)
+    {
+        $definitions->getDefinition(Argument::type(EntityFake::getClassName()))
+            ->willReturn($this->createEntityDefinition());
+
+        $this->beConstructedWith($definitions);
+    }
+
     function it_returns_true_when_values_in_observed_properties_are_equal()
     {
         $firstObject = new EntityFake(1, "Norbert", "Orzechowicz");
         $secondObject = clone $firstObject;
 
-        $this->areEqual($this->createEntityDefinition(), $firstObject, $secondObject)->shouldReturn(true);
+        $this->areEqual($firstObject, $secondObject)->shouldReturn(true);
     }
 
     function it_returns_false_when_values_in_at_least_one_observed_property_is_different()
@@ -24,7 +32,7 @@ class ComparerSpec extends ObjectBehavior
         $secondObject = clone $firstObject;
         $secondObject->changeLastName('Sajdak');
 
-        $this->areEqual($this->createEntityDefinition(), $firstObject, $secondObject)->shouldReturn(false);
+        $this->areEqual($firstObject, $secondObject)->shouldReturn(false);
     }
 
     function it_ignores_not_observed_properties()
@@ -33,7 +41,7 @@ class ComparerSpec extends ObjectBehavior
         $secondObject = clone $firstObject;
         $secondObject->setItems(["Foo", "Bar"]);
 
-        $this->areEqual($this->createEntityDefinition(), $firstObject, $secondObject)->shouldReturn(true);
+        $this->areEqual($firstObject, $secondObject)->shouldReturn(true);
     }
 
     /**

@@ -13,12 +13,20 @@ use Prophecy\Argument;
 
 class ChangeBuilderSpec extends ObjectBehavior
 {
-    function let()
+    function let(InformationPoint $informationPoint)
     {
-        $informationPoint = new InformationPoint([
-            $this->createEntityDefinition(),
-            $this->createAssociatedEntityDefinition()
-        ]);
+        $informationPoint->getDefinition(Argument::type(EntityFake::getClassName()))
+            ->willReturn($this->createEntityDefinition());
+        $informationPoint->getDefinition(Argument::type(AssociatedEntityFake::getClassName()))
+            ->willReturn($this->createAssociatedEntityDefinition());
+
+        $informationPoint->isPersisted(Argument::any())->will(function ($args) {
+            return !is_null($args[0]->getId());
+        });
+
+        $informationPoint->getIdentity(Argument::any())->will(function ($args) {
+            return $args[0]->getId();
+        });
 
         $this->beConstructedWith($informationPoint);
     }
@@ -39,7 +47,6 @@ class ChangeBuilderSpec extends ObjectBehavior
 
     function it_throws_exception_when_new_entity_in_associated_property_does_not_match_target_class()
     {
-
         $sourceObject = new AssociatedEntityFake(1);
         $editedObject = clone($sourceObject);
         $editedObject->setParent(new EntityFake());

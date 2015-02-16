@@ -132,10 +132,11 @@ class UnitOfWorkEventsTest extends \PHPUnit_Framework_TestCase
      */
     private function createUnitOfWork()
     {
+        $definitions = new Definition\Repository\InMemory([$this->createFakeEntityDefinition()]);
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
-            new InformationPoint([$this->createFakeEntityDefinition()]),
-            new Comparer(),
+            new InformationPoint($definitions),
+            new Comparer($definitions),
             $this->eventDispatcher
         );
     }
