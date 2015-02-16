@@ -19,11 +19,10 @@ use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkSpec extends ObjectBehavior
 {
-    function let(EventDispatcher $eventDispatcher)
+    function let()
     {
         $definition = new Definition(
             new ClassName(EntityFake::getClassName()),
@@ -41,8 +40,7 @@ class UnitOfWorkSpec extends ObjectBehavior
             $identifier,
             new ChangeBuilder($definitions, $identifier),
             new Comparer($definitions),
-            $commandBus,
-            $eventDispatcher
+            $commandBus
         );
     }
 

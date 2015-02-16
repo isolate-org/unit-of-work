@@ -3,7 +3,6 @@
     "description": "Generic unit of work",
     "require": {
         "symfony/property-access": "~2.1",
-        "symfony/event-dispatcher": "~2.1",
         "myclabs/deep-copy": "1.2.*"
     },
     "require-dev": {

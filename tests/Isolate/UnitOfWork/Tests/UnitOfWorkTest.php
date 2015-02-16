@@ -22,7 +22,6 @@ use Isolate\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
 use Isolate\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
 use Isolate\UnitOfWork\UnitOfWork;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
 {
@@ -204,8 +203,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
             $identifier,
             new ChangeBuilder($definitions, $identifier),
             new Comparer($definitions),
-            new SilentBus($definitions),
-            new EventDispatcher()
+            new SilentBus($definitions)
         );
     }
 
