@@ -85,37 +85,6 @@ class UnitOfWork
 
     /**
      * @param $entity
-     * @return int
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     */
-    public function getEntityState($entity)
-    {
-        if (!is_object($entity)) {
-            throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
-        }
-
-        if (!$this->isRegistered($entity)) {
-            throw new RuntimeException("Object need to be registered first in the Unit of Work.");
-        }
-
-        if ($this->registry->isRemoved($entity)) {
-            return EntityStates::REMOVED_ENTITY;
-        }
-
-        if (!$this->identifier->isPersisted($entity)) {
-            return EntityStates::NEW_ENTITY;
-        }
-
-        if ($this->isChanged($entity)) {
-            return EntityStates::EDITED_ENTITY;
-        }
-
-        return EntityStates::PERSISTED_ENTITY;
-    }
-
-    /**
-     * @param $entity
      * @throws Exception\InvalidPropertyPathException
      * @throws InvalidArgumentException
      * @throws RuntimeException
@@ -166,6 +135,37 @@ class UnitOfWork
     public function rollback()
     {
         $this->registry->reset();
+    }
+
+    /**
+     * @param $entity
+     * @return int
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */
+    private function getEntityState($entity)
+    {
+        if (!is_object($entity)) {
+            throw new InvalidArgumentException("Only objects can be registered in Unit of Work.");
+        }
+
+        if (!$this->isRegistered($entity)) {
+            throw new RuntimeException("Object need to be registered first in the Unit of Work.");
+        }
+
+        if ($this->registry->isRemoved($entity)) {
+            return EntityStates::REMOVED_ENTITY;
+        }
+
+        if (!$this->identifier->isPersisted($entity)) {
+            return EntityStates::NEW_ENTITY;
+        }
+
+        if ($this->isChanged($entity)) {
+            return EntityStates::EDITED_ENTITY;
+        }
+
+        return EntityStates::PERSISTED_ENTITY;
     }
 
     /**

@@ -12,7 +12,6 @@ use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
-use Isolate\UnitOfWork\EntityStates;
 use Isolate\UnitOfWork\Object\InMemoryRegistry;
 use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
@@ -54,7 +53,6 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $entity = new EntityFake();
         $unitOfWork->register($entity);
 
-        $this->assertSame(EntityStates::NEW_ENTITY, $unitOfWork->getEntityState($entity));
         $unitOfWork->commit();
         $this->assertTrue($this->newCommandHandler->entityWasPersisted($entity));
     }
@@ -108,7 +106,6 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     function test_commit_of_removed_and_persisted_entity()
     {
         $unitOfWork = $this->createUnitOfWork();
-
         $entity = new EntityFake(1, "Dawid", "Sajdak");
 
         $unitOfWork->register($entity);
@@ -122,13 +119,9 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     function test_commits_after_persist_and_update_entity()
     {
         $unitOfWork = $this->createUnitOfWork();
-
         $entity = new EntityFake();
         $unitOfWork->register($entity);
-
-        $this->assertSame(EntityStates::NEW_ENTITY, $unitOfWork->getEntityState($entity));
         $unitOfWork->commit();
-
         $this->assertTrue($this->newCommandHandler->entityWasPersisted($entity));
 
         $entity->changeFirstName('Norbert');
@@ -140,10 +133,8 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     function test_rollback_entity_before_commit()
     {
         $unitOfWork = $this->createUnitOfWork();
-
         $entity = new EntityFake(1, "Dawid", "Sajdak");
         $unitOfWork->register($entity);
-
         $entity->changeFirstName("Norbert");
         $entity->changeLastName("Orzechowicz");
 
@@ -157,10 +148,8 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     {
         $this->editCommandHandler = new FailingCommandHandlerStub();
         $unitOfWork = $this->createUnitOfWork();
-
         $entity = new EntityFake(1, "Dawid", "Sajdak");
         $unitOfWork->register($entity);
-
         $entity->changeFirstName("Norbert");
         $entity->changeLastName("Orzechowicz");
 
@@ -173,21 +162,16 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     function test_that_rollback_after_successful_commit_have_no_affect_for_entities()
     {
         $unitOfWork = $this->createUnitOfWork();
-
         $entity = new EntityFake(1, "Dawid", "Sajdak");
         $unitOfWork->register($entity);
-
         $entity->changeFirstName("Norbert");
         $entity->changeLastName("Orzechowicz");
-
-        $this->assertSame(EntityStates::EDITED_ENTITY, $unitOfWork->getEntityState($entity));
-
         $unitOfWork->commit();
+
         $unitOfWork->rollback();
 
         $this->assertSame("Norbert", $entity->getFirstName());
         $this->assertSame("Orzechowicz", $entity->getLastName());
-        $this->assertSame(EntityStates::PERSISTED_ENTITY, $unitOfWork->getEntityState($entity));
     }
 
     /**
