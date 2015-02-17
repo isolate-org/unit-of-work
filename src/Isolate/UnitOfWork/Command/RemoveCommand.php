@@ -4,7 +4,7 @@ namespace Isolate\UnitOfWork\Command;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
-final class RemoveCommand
+final class RemoveCommand implements Command
 {
     /**
      * @var mixed
