@@ -25,7 +25,7 @@ class ChangeSet extends \ArrayObject
 
     /**
      * @param $propertyName
-     * @return bool
+     * @return Change
      * @throws RuntimeException
      */
     public function getChangeFor($propertyName)
