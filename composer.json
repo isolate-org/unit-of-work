@@ -1,6 +1,7 @@
 {
     "name": "isolate/unit-of-work",
-    "description": "Generic unit of work",
+    "description": "Unit of Work",
+    "keywords": ["isolate", "unit of work", "uow", "unit", "work"],
     "require": {
         "symfony/property-access": "~2.1",
         "myclabs/deep-copy": "1.2.*"
