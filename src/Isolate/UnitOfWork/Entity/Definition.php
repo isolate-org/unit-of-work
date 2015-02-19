@@ -13,7 +13,7 @@ use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 class Definition
 {
     /**
-     * @var string
+     * @var ClassName
      */
     private $className;
 

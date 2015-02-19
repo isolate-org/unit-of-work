@@ -96,10 +96,8 @@ final class ChangeBuilder
             switch ($association->getType()) {
                 case Association::TO_SINGLE_ENTITY:
                     return $this->buildAssociationToSingleEntityChange($property, $oldValue, $newValue);
-                    break;
                 case Association::TO_MANY_ENTITIES;
                     return $this->buildAssociationToManyEntitiesChange($property, $oldValue, $newValue);
-                    break;
             }
         }
 
@@ -110,7 +108,7 @@ final class ChangeBuilder
      * @param Property $property
      * @param $oldValue
      * @param $newValue
-     * @return NewEntity|RemovedEntity|null
+     * @return EditedEntity|NewEntity|RemovedEntity
      * @throws RuntimeException
      */
     private function buildAssociationToSingleEntityChange(Property $property, $oldValue, $newValue)
