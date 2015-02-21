@@ -25,10 +25,6 @@ class SnapshotMaker implements BaseSnapshotMaker
      */
     public function makeSnapshotOf($object)
     {
-        if (!is_object($object)) {
-            throw new InvalidArgumentException("Only object can be cloned.");
-        }
-
         return $this->cloner->copy($object);
     }
 }
