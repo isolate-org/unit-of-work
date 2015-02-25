@@ -4,7 +4,6 @@
     "keywords": ["isolate", "unit of work", "uow", "unit", "work"],
     "require": {
         "php": ">=5.4.0",
-        "symfony/property-access": "~2.1",
         "myclabs/deep-copy": "1.2.*"
     },
     "require-dev": {

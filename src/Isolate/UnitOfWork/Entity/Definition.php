@@ -199,7 +199,7 @@ class Definition
         $reflection = new \ReflectionClass($className);
         foreach ($observedProperties as $property) {
             $propertyName = $property->getName();
-            if ($idDefinition->itFits($propertyName)) {
+            if ($idDefinition->isEqual($propertyName)) {
                 throw new InvalidArgumentException("Id definition property path can't be between observer properties.");
             }
 
