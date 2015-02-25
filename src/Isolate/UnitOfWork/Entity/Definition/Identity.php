@@ -9,39 +9,39 @@ final class Identity
     /**
      * @var string
      */
-    private $propertyPath;
+    private $propertyName;
 
     /**
-     * @param string $propertyPath
+     * @param string $propertyName
      * @throws InvalidArgumentException
      */
-    public function __construct($propertyPath)
+    public function __construct($propertyName)
     {
-        if (!is_string($propertyPath)) {
-            throw new InvalidArgumentException("Property path must be a valid string.");
+        if (!is_string($propertyName)) {
+            throw new InvalidArgumentException("Property name must be a valid string.");
         }
 
-        if (empty($propertyPath)) {
-            throw new InvalidArgumentException("Property path can't be empty.");
+        if (empty($propertyName)) {
+            throw new InvalidArgumentException("Property name can't be empty.");
         }
 
-        $this->propertyPath = $propertyPath;
+        $this->propertyName = $propertyName;
     }
 
     /**
      * @return string
      */
-    public function getPropertyPath()
+    public function getPropertyName()
     {
-        return $this->propertyPath;
+        return $this->propertyName;
     }
 
     /**
      * @param string $propertyPath
      * @return bool
      */
-    public function itFits($propertyPath)
+    public function isEqual($propertyPath)
     {
-        return $this->propertyPath === $propertyPath;
+        return $this->propertyName === $propertyPath;
     }
 }

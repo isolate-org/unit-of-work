@@ -1,16 +1,17 @@
 <?php
 
-namespace spec\Isolate\UnitOfWork\Entity\Identifier\Symfony;
+namespace spec\Isolate\UnitOfWork\Entity\Identifier;
 
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Exception\InvalidPropertyPathException;
+use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class PropertyAccessorIdentifierSpec extends ObjectBehavior
+class PropertyValueIdentifierSpec extends ObjectBehavior
 {
     function let(Definition\Repository $definitions)
     {
@@ -77,7 +78,7 @@ class PropertyAccessorIdentifierSpec extends ObjectBehavior
         );
 
         $this->shouldThrow(
-            new InvalidPropertyPathException("Cant access identifier in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
+            new NotExistingPropertyException("Property \"not_exists\" does not exists in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" class.")
         )->during("isPersisted", [$entity]);
     }
 
@@ -101,7 +102,7 @@ class PropertyAccessorIdentifierSpec extends ObjectBehavior
         );
 
         $this->shouldThrow(
-            new InvalidPropertyPathException("Cant access identifier in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" using \"not_exists\" property path.")
+            new NotExistingPropertyException("Property \"not_exists\" does not exists in \"Isolate\\UnitOfWork\\Tests\\Double\\EntityFake\" class.")
         )->during("getIdentity", [$entity]);
     }
 
