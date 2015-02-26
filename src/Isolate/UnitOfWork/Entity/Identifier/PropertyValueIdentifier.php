@@ -7,7 +7,7 @@ use Isolate\UnitOfWork\Entity\Identifier;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Object\PropertyAccessor;
 
-final class PropertyValueIdentifier implements Identifier
+class PropertyValueIdentifier implements Identifier
 {
     /**
      * @var Repository
