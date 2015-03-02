@@ -85,7 +85,6 @@ class UnitOfWork
 
     /**
      * @param $entity
-     * @throws Exception\InvalidPropertyPathException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */

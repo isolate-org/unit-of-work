@@ -5,7 +5,7 @@ namespace Isolate\UnitOfWork\Tests;
 use Isolate\UnitOfWork\CommandBus\SilentBus;
 use Isolate\UnitOfWork\Entity\ChangeBuilder;
 use Isolate\UnitOfWork\Entity\Comparer;
-use Isolate\UnitOfWork\Entity\Identifier\PropertyValueIdentifier;
+use Isolate\UnitOfWork\Entity\Identifier\EntityIdentifier;
 use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\ClassName;
@@ -180,7 +180,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
     private function createUnitOfWork()
     {
         $definitions = new Definition\Repository\InMemory([$this->createFakeEntityDefinition()]);
-        $identifier = new PropertyValueIdentifier($definitions);
+        $identifier = new EntityIdentifier($definitions);
 
         return new UnitOfWork(
             new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),

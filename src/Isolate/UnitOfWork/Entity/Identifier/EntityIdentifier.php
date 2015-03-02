@@ -7,7 +7,7 @@ use Isolate\UnitOfWork\Entity\Identifier;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Object\PropertyAccessor;
 
-class PropertyValueIdentifier implements Identifier
+class EntityIdentifier implements Identifier
 {
     /**
      * @var Repository
@@ -46,10 +46,8 @@ class PropertyValueIdentifier implements Identifier
     {
         $this->validateEntity($entity);
         $entityDefinition = $this->definitions->getDefinition($entity);
-        $idPropertyPath = $entityDefinition->getIdDefinition()->getPropertyName();
-        $identity = $this->propertyAccessor->getValue($entity, $idPropertyPath);
 
-        return !empty($identity) || $identity === 0;
+        return $entityDefinition->getIdentityStrategy()->isIdentified($entity);
 
     }
 
@@ -62,14 +60,8 @@ class PropertyValueIdentifier implements Identifier
     {
         $this->validateEntity($entity);
         $entityDefinition = $this->definitions->getDefinition($entity);
-        $idPropertyPath = $entityDefinition->getIdDefinition()->getPropertyName();
-        $identity = $this->propertyAccessor->getValue($entity, $idPropertyPath);
 
-        if (empty($identity) && $identity !== 0) {
-            throw new RuntimeException(sprintf("Entity \"%s\" was not persisted yet.", get_class($entity)));
-        }
-
-        return $identity;
+        return $entityDefinition->getIdentityStrategy()->getIdentity($entity);
     }
 
     /**
