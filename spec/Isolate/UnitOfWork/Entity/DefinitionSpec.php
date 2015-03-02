@@ -79,4 +79,12 @@ class DefinitionSpec extends ObjectBehavior
         $this->setRemoveCommandHandler($commandHandler);
         $this->hasRemoveCommandHandler()->shouldReturn(true);
     }
+
+    function it_has_default_identification_strategy()
+    {
+        $this->beConstructedWith(new ClassName(EntityFake::getClassName()), new Identity("id"));
+        $this->getIdentityStrategy()->shouldReturnAnInstanceOf(
+            'Isolate\UnitOfWork\Entity\Definition\IdentificationStrategy'
+        );
+    }
 }

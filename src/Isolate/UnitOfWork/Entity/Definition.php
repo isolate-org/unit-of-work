@@ -5,6 +5,7 @@ namespace Isolate\UnitOfWork\Entity;
 use Isolate\UnitOfWork\Command\EditCommandHandler;
 use Isolate\UnitOfWork\Command\NewCommandHandler;
 use Isolate\UnitOfWork\Command\RemoveCommandHandler;
+use Isolate\UnitOfWork\Entity\Definition\IdentificationStrategy;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
@@ -43,15 +44,21 @@ class Definition
     private $observedProperties;
 
     /**
+     * @var IdentificationStrategy
+     */
+    private $identificationStrategy;
+
+    /**
      * @param ClassName $className
      * @param Identity $idDefinition
-     * @throws InvalidArgumentException
+     * @param IdentificationStrategy $identificationStrategy
      */
-    public function __construct(ClassName $className, Identity $idDefinition)
+    public function __construct(ClassName $className, Identity $idDefinition, IdentificationStrategy $identificationStrategy = null)
     {
         $this->className = $className;
         $this->idDefinition = $idDefinition;
         $this->observedProperties = [];
+        $this->identificationStrategy = $identificationStrategy ?: new IdentificationStrategy\PropertyValue($idDefinition);
     }
 
     /**
@@ -211,5 +218,13 @@ class Definition
                 ));
             }
         }
+    }
+
+    /**
+     * @return IdentificationStrategy|IdentificationStrategy
+     */
+    public function getIdentityStrategy()
+    {
+        return $this->identificationStrategy;
     }
 }
