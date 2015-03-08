@@ -17,7 +17,6 @@ use Isolate\UnitOfWork\Object\RecoveryPoint;
 use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
-use Isolate\UnitOfWork\Tests\Double\FailingCommandHandlerStub;
 use Isolate\UnitOfWork\Tests\Double\NewCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\RemoveCommandHandlerMock;
 use Isolate\UnitOfWork\UnitOfWork;
@@ -139,21 +138,6 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $entity->changeLastName("Orzechowicz");
 
         $unitOfWork->rollback();
-
-        $this->assertSame("Dawid", $entity->getFirstName());
-        $this->assertSame("Sajdak", $entity->getLastName());
-    }
-
-    function test_rollback_when_command_handler_return_false()
-    {
-        $this->editCommandHandler = new FailingCommandHandlerStub();
-        $unitOfWork = $this->createUnitOfWork();
-        $entity = new EntityFake(1, "Dawid", "Sajdak");
-        $unitOfWork->register($entity);
-        $entity->changeFirstName("Norbert");
-        $entity->changeLastName("Orzechowicz");
-
-        $unitOfWork->commit();
 
         $this->assertSame("Dawid", $entity->getFirstName());
         $this->assertSame("Sajdak", $entity->getLastName());

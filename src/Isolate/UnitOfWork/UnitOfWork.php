@@ -106,24 +106,17 @@ class UnitOfWork
     public function commit()
     {
         foreach ($this->registry->all() as $entity) {
-
-            $commandResult = null;
             switch($this->getEntityState($entity)) {
                 case EntityStates::NEW_ENTITY:
-                    $commandResult = $this->commandBus->dispatch(new NewCommand($entity));
+                    $this->commandBus->dispatch(new NewCommand($entity));
                     break;
                 case EntityStates::EDITED_ENTITY:
                     $changeSet = $this->changeBuilder->buildChanges($this->registry->getSnapshot($entity), $entity);
-                    $commandResult = $this->commandBus->dispatch(new EditCommand($entity, $changeSet));
+                    $this->commandBus->dispatch(new EditCommand($entity, $changeSet));
                     break;
                 case EntityStates::REMOVED_ENTITY:
-                    $commandResult = $this->commandBus->dispatch(new RemoveCommand($entity));
+                    $this->commandBus->dispatch(new RemoveCommand($entity));
                     break;
-            }
-
-            if ($commandResult === false) {
-                $this->rollback();
-                return ;
             }
         }
 
