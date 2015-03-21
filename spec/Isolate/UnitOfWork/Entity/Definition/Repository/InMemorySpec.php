@@ -22,14 +22,14 @@ class InMemorySpec extends ObjectBehavior
     {
         $this->shouldThrow(
             new InvalidArgumentException("Entity definition repository require array od traversable collection of entity definitions.")
-        )->during("__construct", [new \DateTime()]);
+        )->during("__construct", [new \stdClass()]);
     }
 
     function it_throws_exception_when_crated_with_non_entity_definition_in_collection()
     {
         $this->shouldThrow(
             new InvalidArgumentException("Each element in collection needs to be an instance of Isolate\\UnitOfWork\\Entity\\Definition")
-        )->during("__construct", [[new \DateTime()]]);
+        )->during("__construct", [[new \stdClass()]]);
     }
 
     function it_throws_exception_when_checking_if_definition_exists_for_non_object()

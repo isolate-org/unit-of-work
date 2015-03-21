@@ -14,7 +14,7 @@ class EntityIdentifierSpec extends ObjectBehavior
 {
     function let(Definition\Repository $definitions)
     {
-        $definitions->hasDefinition(Argument::type('DateTime'))->willReturn(false);
+        $definitions->hasDefinition(Argument::type('stdClass'))->willReturn(false);
         $this->beConstructedWith($definitions);
     }
 
@@ -25,14 +25,14 @@ class EntityIdentifierSpec extends ObjectBehavior
 
     function it_throw_exception_during_verification_of_non_defined_entity()
     {
-        $this->shouldThrow(new RuntimeException("Class \"DateTime\" does not have definition."))
-            ->during("isPersisted", [new \DateTime()]);
+        $this->shouldThrow(new RuntimeException("Class \"stdClass\" does not have definition."))
+            ->during("isPersisted", [new \stdClass()]);
     }
 
     function it_throw_exception_during_identification_of_non_defined_entity()
     {
-        $this->shouldThrow(new RuntimeException("Class \"DateTime\" does not have definition."))
-            ->during("getIdentity", [new \DateTime()]);
+        $this->shouldThrow(new RuntimeException("Class \"stdClass\" does not have definition."))
+            ->during("getIdentity", [new \stdClass()]);
     }
 
     function it_use_entity_definition_to_tells_if_entity_was_persisted(Definition\Repository $definitions, Definition\IdentificationStrategy $identificationStrategy)

@@ -13,7 +13,7 @@ use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\Definition\Identity;
 use Isolate\UnitOfWork\Object\InMemoryRegistry;
-use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Object\PropertyCloner;
 use Isolate\UnitOfWork\Object\SnapshotMaker\Adapter\DeepCopy\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EditCommandHandlerMock;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
@@ -167,7 +167,7 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $identifier = new EntityIdentifier($definitions);
 
         return new UnitOfWork(
-            new InMemoryRegistry(new SnapshotMaker(), new RecoveryPoint()),
+            new InMemoryRegistry(new SnapshotMaker(), new PropertyCloner()),
             $identifier,
             new ChangeBuilder($definitions, $identifier),
             new Comparer($definitions),
