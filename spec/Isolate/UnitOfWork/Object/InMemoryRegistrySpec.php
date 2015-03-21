@@ -2,7 +2,7 @@
 
 namespace spec\Isolate\UnitOfWork\Object;
 
-use Isolate\UnitOfWork\Object\RecoveryPoint;
+use Isolate\UnitOfWork\Object\PropertyCloner;
 use Isolate\UnitOfWork\Object\SnapshotMaker;
 use Isolate\UnitOfWork\Tests\Double\EntityFake;
 use PhpSpec\ObjectBehavior;
@@ -10,7 +10,7 @@ use Prophecy\Argument;
 
 class InMemoryRegistrySpec extends ObjectBehavior
 {
-    function let(SnapshotMaker $cloner, RecoveryPoint $recoveryPoint)
+    function let(SnapshotMaker $cloner, PropertyCloner $recoveryPoint)
     {
         $cloner->makeSnapshotOf(Argument::type('object'))->will(function ($args) {
             $object = $args[0];
@@ -104,7 +104,7 @@ class InMemoryRegistrySpec extends ObjectBehavior
         ]);
     }
 
-    function it_resets_objects_to_states_from_snapshots(SnapshotMaker $cloner, RecoveryPoint $recoveryPoint)
+    function it_resets_objects_to_states_from_snapshots(SnapshotMaker $cloner, PropertyCloner $recoveryPoint)
     {
         $object = new EntityFake(1, "Norbert", "Orzechowicz");
         $objectSnapshot = new EntityFake(1, "Norbert", "Orzechowicz");
@@ -117,7 +117,7 @@ class InMemoryRegistrySpec extends ObjectBehavior
         $this->remove($objectToRemove);
         $this->reset();
 
-        $recoveryPoint->recover($object, $objectSnapshot)->shouldHaveBeenCalled();
+        $recoveryPoint->cloneProperties($object, $objectSnapshot)->shouldHaveBeenCalled();
         $this->isRemoved($objectToRemove)->shouldReturn(false);
     }
 }

@@ -14,6 +14,6 @@ class PropertySpec extends ObjectBehavior
             ->during("__construct", [""]);
 
         $this->shouldThrow(new InvalidArgumentException("Property name must be a valid string."))
-            ->during("__construct", [new \DateTime()]);
+            ->during("__construct", [new \stdClass()]);
     }
 }

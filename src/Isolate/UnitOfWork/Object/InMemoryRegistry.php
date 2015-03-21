@@ -10,7 +10,7 @@ class InMemoryRegistry implements Registry
     private $snapshotMaker;
 
     /**
-     * @var RecoveryPoint
+     * @var PropertyCloner
      */
     private $recoveryPoint;
 
@@ -31,9 +31,9 @@ class InMemoryRegistry implements Registry
 
     /**
      * @param SnapshotMaker $snapshotMaker
-     * @param RecoveryPoint $recoveryPoint
+     * @param PropertyCloner $recoveryPoint
      */
-    public function __construct(SnapshotMaker $snapshotMaker, RecoveryPoint $recoveryPoint)
+    public function __construct(SnapshotMaker $snapshotMaker, PropertyCloner $recoveryPoint)
     {
         $this->snapshotMaker = $snapshotMaker;
         $this->recoveryPoint = $recoveryPoint;
@@ -126,7 +126,7 @@ class InMemoryRegistry implements Registry
         $this->removed = [];
 
         foreach ($this->snapshots as $id => $objectSnapshot) {
-            $this->recoveryPoint->recover($this->objects[$id], $objectSnapshot);
+            $this->recoveryPoint->cloneProperties($this->objects[$id], $objectSnapshot);
         }
     }
 

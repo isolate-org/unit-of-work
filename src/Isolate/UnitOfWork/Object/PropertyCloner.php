@@ -3,9 +3,9 @@
 namespace Isolate\UnitOfWork\Object;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
-use Isolate\UnitOfWork\Object\PropertyAccessor;
+use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 
-class RecoveryPoint
+class PropertyCloner
 {
     /**
      * @var PropertyAccessor
@@ -18,22 +18,45 @@ class RecoveryPoint
     }
 
     /**
-     * @param $object
-     * @param $sourceObject
+     * @param $target
+     * @param $source
      */
-    public function recover($object, $sourceObject)
+    public function cloneProperties($target, $source)
     {
-        $this->validaObjects($object, $sourceObject);
+        $this->validaObjects($target, $source);
 
-        $reflection = new \ReflectionClass($object);
+        $reflection = new \ReflectionClass($target);
         foreach ($reflection->getProperties() as $property) {
 
             $this->propertyAccessor->setValue(
-                $object,
+                $target,
                 $property->getName(),
-                $this->propertyAccessor->getValue($sourceObject, $property->getName())
+                $this->propertyAccessor->getValue($source, $property->getName())
             );
         }
+    }
+
+    /**
+     * @param $target
+     * @param $source
+     * @param $propertyName
+     * @throws InvalidArgumentException
+     * @throws NotExistingPropertyException
+     */
+    public function cloneProperty($target, $source, $propertyName)
+    {
+        $this->validaObjects($target, $source);
+
+        $reflection = new \ReflectionClass($target);
+        if (!$reflection->hasProperty($propertyName)) {
+            throw new NotExistingPropertyException();
+        }
+
+        $this->propertyAccessor->setValue(
+            $target,
+            $propertyName,
+            $this->propertyAccessor->getValue($source, $propertyName)
+        );
     }
 
     /**

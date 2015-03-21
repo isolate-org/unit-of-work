@@ -35,7 +35,7 @@ class UnitOfWorkSpec extends ObjectBehavior
     function it_throw_exception_during_non_entity_registration()
     {
         $this->shouldThrow(new InvalidArgumentException("Only entities can be registered in Unit of Work."))
-            ->during("register", [new \DateTime()]);
+            ->during("register", [new \stdClass()]);
     }
 
     function it_tells_when_entity_was_registered(Registry $registry, Identifier $identifier)

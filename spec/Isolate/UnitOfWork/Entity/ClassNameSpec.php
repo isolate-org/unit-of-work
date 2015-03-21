@@ -11,7 +11,7 @@ class ClassNameSpec extends ObjectBehavior
     function it_throws_exception_if_created_with_non_string_class_name()
     {
         $this->shouldThrow(new InvalidArgumentException("Class name must be a valid string."))
-            ->during("__construct", [new \DateTime()]);
+            ->during("__construct", [new \stdClass()]);
     }
 
     function it_throws_exception_if_class_not_exists()
