@@ -10,7 +10,7 @@ use Isolate\UnitOfWork\Tests\Double\ProtectedEntity;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class ValueComparerSpec extends ObjectBehavior
+class PHPUnitValueComparerSpec extends ObjectBehavior
 {
     function it_returns_false_when_there_is_no_difference_between_same_property_in_two_objects()
     {
