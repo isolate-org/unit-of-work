@@ -9,7 +9,8 @@ class StrictScalarComparatorSpec extends ObjectBehavior
 {
     function it_throws_exception_when_null_compared_to_zero()
     {
-        $this->shouldThrow(ComparisonFailure::class)->during(
+        $exception = new ComparisonFailure(0, null, "0", "null", false, 'Failed asserting that null matches expected 0.');
+        $this->shouldThrow($exception)->during(
             "assertEquals", [0, null]
         );
     }
