@@ -50,7 +50,7 @@ interface Registry
     public function all();
 
     /**
-     * Clean removed entities and restore registered from snapshots.
+     * Restore object states from their snapshots.
      */
     public function reset();
 }

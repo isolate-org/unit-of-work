@@ -5,7 +5,7 @@ namespace Isolate\UnitOfWork\Entity;
 use Isolate\UnitOfWork\Entity\Definition\Association;
 use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Entity\Definition\Repository;
-use Isolate\UnitOfWork\Entity\Property\ValueComparer;
+use Isolate\UnitOfWork\Entity\Property\PHPUnitValueComparer;
 use Isolate\UnitOfWork\Entity\Value\Change\AssociatedCollection;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Entity\Value\Change\EditedEntity;
@@ -23,7 +23,7 @@ final class ChangeBuilder
     private $propertyAccessor;
 
     /**
-     * @var ValueComparer
+     * @var PHPUnitValueComparer
      */
     private $propertyValueComparer;
 
@@ -44,7 +44,7 @@ final class ChangeBuilder
     public function __construct(Repository $definitions, Identifier $identifier)
     {
         $this->propertyAccessor = new PropertyAccessor();
-        $this->propertyValueComparer = new ValueComparer();
+        $this->propertyValueComparer = new PHPUnitValueComparer();
         $this->definitions = $definitions;
         $this->identifier = $identifier;
     }
