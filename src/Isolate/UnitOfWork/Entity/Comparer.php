@@ -6,6 +6,9 @@ use Isolate\UnitOfWork\Entity\Definition\Repository;
 use Isolate\UnitOfWork\Entity\Property\PHPUnitValueComparer;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 class Comparer
 {
     /**
@@ -32,6 +35,8 @@ class Comparer
      * @param $secondEntity
      * @return bool
      * @throws InvalidArgumentException
+     * 
+     * @api
      */
     public function areEqual($firstEntity, $secondEntity)
     {

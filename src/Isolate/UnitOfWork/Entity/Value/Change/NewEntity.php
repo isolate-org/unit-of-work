@@ -61,6 +61,8 @@ final class NewEntity implements Change
 
     /**
      * @return boolean
+     * 
+     * @api
      */
     public function isPersisted()
     {

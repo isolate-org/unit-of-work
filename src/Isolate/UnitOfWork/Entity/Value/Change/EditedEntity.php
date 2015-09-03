@@ -68,6 +68,8 @@ final class EditedEntity implements Change
 
     /**
      * @return ChangeSet
+     * 
+     * @api
      */
     public function getChangeSet()
     {

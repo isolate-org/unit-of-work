@@ -4,6 +4,9 @@ namespace Isolate\UnitOfWork\Entity\Property;
 
 use Isolate\UnitOfWork\Entity\Definition\Property;
 
+/**
+ * @api
+ */
 interface ValueComparer
 {
     /**
@@ -11,6 +14,8 @@ interface ValueComparer
      * @param $firstObject
      * @param $secondObject
      * @return mixed
+     * 
+     * @api
      */
     public function hasDifferentValue(Property $property, $firstObject, $secondObject);
 }

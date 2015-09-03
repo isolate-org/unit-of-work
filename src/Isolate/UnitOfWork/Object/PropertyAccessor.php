@@ -5,6 +5,9 @@ namespace Isolate\UnitOfWork\Object;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 
+/**
+ * @api
+ */
 final class PropertyAccessor
 {
     /**
@@ -13,6 +16,8 @@ final class PropertyAccessor
      * @return mixed
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
+     * 
+     * @api
      */
     public function getValue($object, $propertyName)
     {
@@ -31,6 +36,8 @@ final class PropertyAccessor
      * @param $value
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
+     * 
+     * @api
      */
     public function setValue($object, $propertyName, $value)
     {

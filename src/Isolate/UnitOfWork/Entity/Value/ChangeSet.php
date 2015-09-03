@@ -5,11 +5,16 @@ namespace Isolate\UnitOfWork\Entity\Value;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 
+/**
+ * @api
+ */
 class ChangeSet extends \ArrayObject
 {
     /**
      * @param $propertyName
      * @return bool
+     * 
+     * @api
      */
     public function hasChangeFor($propertyName)
     {
@@ -27,6 +32,8 @@ class ChangeSet extends \ArrayObject
      * @param $propertyName
      * @return Change
      * @throws RuntimeException
+     * 
+     * @api
      */
     public function getChangeFor($propertyName)
     {
@@ -43,6 +50,8 @@ class ChangeSet extends \ArrayObject
     /**
      * @param array $properties
      * @return bool
+     * 
+     * @api
      */
     public function hasChangesForAny(array $properties = [])
     {
@@ -57,6 +66,8 @@ class ChangeSet extends \ArrayObject
 
     /**
      * @return ScalarChange[]
+     * 
+     * @api
      */
     public function all()
     {

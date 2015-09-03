@@ -2,6 +2,9 @@
 
 namespace Isolate\UnitOfWork;
 
+/**
+ * @api
+ */
 final class EntityStates
 {
     /**
