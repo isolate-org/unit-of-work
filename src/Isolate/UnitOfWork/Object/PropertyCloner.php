@@ -5,6 +5,9 @@ namespace Isolate\UnitOfWork\Object;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 
+/**
+ * @api
+ */
 class PropertyCloner
 {
     /**
@@ -20,6 +23,8 @@ class PropertyCloner
     /**
      * @param $target
      * @param $source
+     * 
+     * @api
      */
     public function cloneProperties($target, $source)
     {
@@ -42,6 +47,8 @@ class PropertyCloner
      * @param $propertyName
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
+     * 
+     * @api
      */
     public function cloneProperty($target, $source, $propertyName)
     {

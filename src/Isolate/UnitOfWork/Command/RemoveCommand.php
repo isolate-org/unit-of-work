@@ -4,6 +4,9 @@ namespace Isolate\UnitOfWork\Command;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class RemoveCommand implements Command
 {
     /**
@@ -26,6 +29,8 @@ final class RemoveCommand implements Command
 
     /**
      * @return mixed
+     * 
+     * @api
      */
     public function getEntity()
     {

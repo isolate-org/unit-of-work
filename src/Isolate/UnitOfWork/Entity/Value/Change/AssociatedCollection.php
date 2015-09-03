@@ -69,6 +69,8 @@ final class AssociatedCollection implements Change
 
     /**
      * @return array|NewEntity[]
+     * 
+     * @api
      */
     public function getChangeForNewEntities()
     {
@@ -84,6 +86,8 @@ final class AssociatedCollection implements Change
 
     /**
      * @return array|RemovedEntity[]
+     * 
+     * @api
      */
     public function getChangesForRemovedEntities()
     {
@@ -99,6 +103,8 @@ final class AssociatedCollection implements Change
 
     /**
      * @return array|EditedEntity[]
+     * 
+     * @api
      */
     public function getChangesForEditedEntities()
     {

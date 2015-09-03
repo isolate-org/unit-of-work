@@ -15,6 +15,9 @@ use Isolate\UnitOfWork\Object\PropertyAccessor;
 use Isolate\UnitOfWork\Entity\Value\Change\ScalarChange;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 
+/**
+ * @api
+ */
 final class ChangeBuilder
 {
     /**
@@ -54,6 +57,8 @@ final class ChangeBuilder
      * @param $newEntity
      * @return ChangeSet
      * @throws RuntimeException
+     * 
+     * @api
      */
     public function buildChanges($oldEntity, $newEntity)
     {

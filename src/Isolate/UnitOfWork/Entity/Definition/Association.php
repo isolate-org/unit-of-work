@@ -5,6 +5,9 @@ namespace Isolate\UnitOfWork\Entity\Definition;
 use Isolate\UnitOfWork\Entity\ClassName;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class Association
 {
     /**
@@ -42,6 +45,8 @@ final class Association
 
     /**
      * @return ClassName
+     * 
+     * @api
      */
     public function getTargetClassName()
     {
@@ -50,6 +55,8 @@ final class Association
 
     /**
      * @return int
+     * 
+     * @api
      */
     public function getType()
     {

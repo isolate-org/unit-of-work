@@ -5,6 +5,9 @@ namespace Isolate\UnitOfWork\Command;
 use Isolate\UnitOfWork\Entity\Value\ChangeSet;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class EditCommand implements Command
 {
     /**
@@ -34,6 +37,8 @@ final class EditCommand implements Command
 
     /**
      * @return mixed
+     * 
+     * @api
      */
     public function getEntity()
     {
@@ -42,6 +47,8 @@ final class EditCommand implements Command
 
     /**
      * @return ChangeSet
+     * 
+     * @api
      */
     public function getChanges()
     {

@@ -11,6 +11,9 @@ use Isolate\UnitOfWork\Entity\Definition\Property;
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\NotExistingPropertyException;
 
+/**
+ * @api
+ */
 class Definition
 {
     /**
@@ -65,6 +68,8 @@ class Definition
      * @param Property[] $properties
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
+     * 
+     * @api
      */
     public function setObserved(array $properties)
     {
@@ -81,6 +86,8 @@ class Definition
      * @param Property $property
      * @throws InvalidArgumentException
      * @throws NotExistingPropertyException
+     * 
+     * @api
      */
     public function addToObserved(Property $property)
     {
@@ -91,6 +98,8 @@ class Definition
 
     /**
      * @return Property[]|array
+     * 
+     * @api
      */
     public function getObservedProperties()
     {
@@ -99,6 +108,8 @@ class Definition
 
     /**
      * @return ClassName
+     * 
+     * @api
      */
     public function getClassName()
     {
@@ -107,6 +118,8 @@ class Definition
 
     /**
      * @return Identity
+     * 
+     * @api
      */
     public function getIdDefinition()
     {
@@ -116,6 +129,8 @@ class Definition
     /**
      * @param $entity
      * @return bool
+     * 
+     * @api
      */
     public function fitsFor($entity)
     {
@@ -124,6 +139,8 @@ class Definition
 
     /**
      * @param NewCommandHandler $commandHandler
+     * 
+     * @api
      */
     public function setNewCommandHandler(NewCommandHandler $commandHandler)
     {
@@ -132,6 +149,8 @@ class Definition
 
     /**
      * @return bool
+     * 
+     * @api
      */
     public function hasNewCommandHandler()
     {
@@ -140,6 +159,8 @@ class Definition
 
     /**
      * @return NewCommandHandler|null
+     * 
+     * @api
      */
     public function getNewCommandHandler()
     {
@@ -148,6 +169,8 @@ class Definition
 
     /**
      * @param EditCommandHandler $commandHandler
+     * 
+     * @api
      */
     public function setEditCommandHandler(EditCommandHandler $commandHandler)
     {
@@ -156,6 +179,8 @@ class Definition
 
     /**
      * @return bool
+     * 
+     * @api
      */
     public function hasEditCommandHandler()
     {
@@ -164,6 +189,8 @@ class Definition
 
     /**
      * @return EditCommandHandler|null
+     * 
+     * @api
      */
     public function getEditCommandHandler()
     {
@@ -172,6 +199,8 @@ class Definition
 
     /**
      * @param RemoveCommandHandler $commandHandler
+     * 
+     * @api
      */
     public function setRemoveCommandHandler(RemoveCommandHandler $commandHandler)
     {
@@ -180,6 +209,8 @@ class Definition
 
     /**
      * @return bool
+     * 
+     * @api
      */
     public function hasRemoveCommandHandler()
     {
@@ -188,12 +219,24 @@ class Definition
 
     /**
      * @return RemoveCommandHandler|null
+     * 
+     * @api
      */
     public function getRemoveCommandHandler()
     {
         return $this->removeCommandHandler;
     }
 
+    /**
+     * @return IdentificationStrategy|IdentificationStrategy
+     *
+     * @api
+     */
+    public function getIdentityStrategy()
+    {
+        return $this->identificationStrategy;
+    }
+    
     /**
      * @param $className
      * @param Identity $idDefinition
@@ -218,13 +261,5 @@ class Definition
                 ));
             }
         }
-    }
-
-    /**
-     * @return IdentificationStrategy|IdentificationStrategy
-     */
-    public function getIdentityStrategy()
-    {
-        return $this->identificationStrategy;
     }
 }

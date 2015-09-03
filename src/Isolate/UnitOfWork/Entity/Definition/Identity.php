@@ -4,6 +4,9 @@ namespace Isolate\UnitOfWork\Entity\Definition;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class Identity
 {
     /**
@@ -30,6 +33,8 @@ final class Identity
 
     /**
      * @return string
+     * 
+     * @api
      */
     public function getPropertyName()
     {
@@ -39,6 +44,8 @@ final class Identity
     /**
      * @param string $propertyPath
      * @return bool
+     * 
+     * @api
      */
     public function isEqual($propertyPath)
     {

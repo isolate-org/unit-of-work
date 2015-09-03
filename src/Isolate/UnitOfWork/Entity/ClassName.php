@@ -4,6 +4,9 @@ namespace Isolate\UnitOfWork\Entity;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class ClassName
 {
     /**
@@ -36,6 +39,8 @@ final class ClassName
     /**
      * @param $entity
      * @return bool
+     * 
+     * @api
      */
     public function isClassOf($entity)
     {

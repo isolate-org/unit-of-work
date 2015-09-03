@@ -13,6 +13,9 @@ use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 use Isolate\UnitOfWork\Exception\RuntimeException;
 use Isolate\UnitOfWork\Entity\Definition;
 
+/**
+ * @api
+ */
 class UnitOfWork
 {
     /**
@@ -60,6 +63,8 @@ class UnitOfWork
      * @param $entity
      * @throws InvalidArgumentException
      * @throws RuntimeException
+     * 
+     * @api
      */
     public function register($entity)
     {
@@ -77,6 +82,8 @@ class UnitOfWork
     /**
      * @param $entity
      * @return bool
+     * 
+     * @api
      */
     public function isRegistered($entity)
     {
@@ -87,6 +94,8 @@ class UnitOfWork
      * @param $entity
      * @throws InvalidArgumentException
      * @throws RuntimeException
+     * 
+     * @api
      */
     public function remove($entity)
     {
@@ -103,6 +112,12 @@ class UnitOfWork
         $this->registry->remove($entity);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * 
+     * @api
+     */
     public function commit()
     {
         foreach ($this->registry->all() as $entity) {
@@ -124,6 +139,9 @@ class UnitOfWork
         $this->registry->makeNewSnapshots();
     }
 
+    /**
+     * @api
+     */
     public function rollback()
     {
         $this->registry->reset();

@@ -4,6 +4,9 @@ namespace Isolate\UnitOfWork\Entity\Definition;
 
 use Isolate\UnitOfWork\Exception\InvalidArgumentException;
 
+/**
+ * @api
+ */
 final class Property
 {
     /**
@@ -42,6 +45,8 @@ final class Property
 
     /**
      * @return string
+     * 
+     * @api
      */
     public function getName()
     {
@@ -50,6 +55,8 @@ final class Property
 
     /**
      * @return bool
+     * 
+     * @api
      */
     public function isAssociated()
     {
@@ -58,6 +65,8 @@ final class Property
 
     /**
      * @return null|Association
+     * 
+     * @api
      */
     public function getAssociation()
     {
