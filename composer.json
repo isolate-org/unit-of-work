@@ -8,7 +8,7 @@
         "sebastian/comparator": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.4.*",
+        "phpunit/phpunit": "^4.0",
         "phpspec/phpspec": "2.1.*",
         "fzaninotto/faker": "1.4.*"
     },
