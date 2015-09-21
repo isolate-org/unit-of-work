@@ -20,4 +20,4 @@ install:
 
 test_script:
   - cd c:\projects\isolate\unit-of-works
-  - vendor\bin\phpunit.bat
+  - php bin\phpunit
