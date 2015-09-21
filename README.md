@@ -1,6 +1,7 @@
 # Unit of Work
 
 [![Build Status](https://travis-ci.org/isolate-org/unit-of-work.svg?branch=master)](https://travis-ci.org/isolate-org/unit-of-work)
+[![Windows Build Statys](https://ci.appveyor.com/api/projects/status/github/norzechowicz/unit-of-work?branch=master&svg=true)](https://ci.appveyor.com/api/projects/status/github/norzechowicz/unit-of-work?branch=master&svg=true)
 [![Latest Stable Version](https://poser.pugx.org/isolate/unit-of-work/v/stable.svg)](https://packagist.org/packages/isolate/unit-of-work)
 [![Total Downloads](https://poser.pugx.org/isolate/unit-of-work/downloads.svg)](https://packagist.org/packages/isolate/unit-of-work)
 [![Latest Unstable Version](https://poser.pugx.org/isolate/unit-of-work/v/unstable.svg)](https://packagist.org/packages/isolate/unit-of-work)

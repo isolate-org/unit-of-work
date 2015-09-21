@@ -20,5 +20,5 @@ before_script:
   - COMPOSER_ROOT_VERSION=dev-master composer $COMPOSER_OPTIONS
 
 script:
-  - ./bin/phpspec run -v
+  - ./bin/phpspec run --format=dot
   - ./bin/phpunit
