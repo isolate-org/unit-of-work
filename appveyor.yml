@@ -1,23 +1,22 @@
 build: false
-shallow_clone: false
-platform: 'x86'
+shallow_clone: true
+platform: x86
 clone_folder: c:\projects\isolate\unit-of-works
 
+init:
+  - SET COMPOSER_NO_INTERACTION=1
+    
 install:
-  - appveyor DownloadFile https://strcpy.net/packages/Win32OpenSSL-1_0_2a.exe
-  - Win32OpenSSL-1_0_2a.exe /silent /verysilent /sp- /suppressmsgboxes
-  - SET PATH=C:\Program Files\OpenSSL;%PATH%
   - cinst -y php
   - cd c:\tools\php
   - copy php.ini-production php.ini
   - echo date.timezone="UTC" >> php.ini
   - echo extension=php_curl.dll >> php.ini
   - echo extension_dir=ext >> php.ini
-  - echo extension=php_openssl.dll >> php.ini
   - SET PATH=C:\tools\php;%PATH%
   - cd c:\projects\isolate\unit-of-works
-  - php -r "readfile('http://getcomposer.org/installer');" | php
-  - php composer.phar install --prefer-source --no-interaction
+  - appveyor DownloadFile https://getcomposer.org/composer.phar
+  - php composer.phar update --prefer-source --no-progress --ansi
 
 test_script:
   - cd c:\projects\isolate\unit-of-works
