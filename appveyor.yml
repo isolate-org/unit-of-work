@@ -4,7 +4,8 @@ platform: 'x86'
 clone_folder: c:\projects\isolate\unit-of-works
 
 install:
-  - cinst -y OpenSSL.Light
+  - ps: Start-FileDownload 'http://slproweb.com/download/Win32OpenSSL-1_0_2a.exe' 
+  - ps: Start-Process "Win32OpenSSL-1_0_2a.exe" -ArgumentList "/silent /verysilent /sp- /suppressmsgboxes" -Wait
   - SET PATH=C:\Program Files\OpenSSL;%PATH%
   - cinst -y php
   - cd c:\tools\php
