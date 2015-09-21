@@ -4,8 +4,8 @@ platform: 'x86'
 clone_folder: c:\projects\isolate\unit-of-works
 
 install:
-  - ps: Start-FileDownload 'http://slproweb.com/download/Win32OpenSSL-1_0_2a.exe' 
-  - ps: Start-Process "Win32OpenSSL-1_0_2a.exe" -ArgumentList "/silent /verysilent /sp- /suppressmsgboxes" -Wait
+  - appveyor DownloadFile https://strcpy.net/packages/Win32OpenSSL-1_0_2a.exe
+  - Win32OpenSSL-1_0_2a.exe /silent /verysilent /sp- /suppressmsgboxes
   - SET PATH=C:\Program Files\OpenSSL;%PATH%
   - cinst -y php
   - cd c:\tools\php
