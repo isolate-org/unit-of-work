@@ -21,4 +21,4 @@ install:
 test_script:
   - cd c:\projects\isolate\unit-of-works
   - bin\phpunit.bat
-  - bin\phpspec run --format=dot
+  - bin\phpspec run --format=dot --ansi
