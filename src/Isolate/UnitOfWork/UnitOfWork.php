@@ -34,6 +34,11 @@ class UnitOfWork
     private $changeBuilder;
 
     /**
+     * @var Comparer
+     */
+    private $comparer;
+
+    /**
      * @var CommandBus
      */
     private $commandBus;

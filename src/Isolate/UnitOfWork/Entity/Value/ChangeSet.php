@@ -73,4 +73,14 @@ class ChangeSet extends \ArrayObject
     {
         return $this->getIterator();
     }
+
+    /**
+     * @param mixed $index
+     *
+     * @return Change
+     */
+    public function offsetGet($index)
+    {
+        parent::offsetGet($index);
+    }
 }
