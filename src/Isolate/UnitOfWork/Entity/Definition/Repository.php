@@ -15,6 +15,8 @@ interface Repository
 {
     /**
      * @param Definition $entityDefinition
+     *
+     * @api
      */
     public function addDefinition(Definition $entityDefinition);
     
