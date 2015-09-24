@@ -157,13 +157,29 @@ class UnitOfWorkTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("Norbert", $entity->getFirstName());
         $this->assertSame("Orzechowicz", $entity->getLastName());
     }
+    
+    function test_definition_registration_after_unit_of_work_is_created()
+    {
+        $definitions = new Definition\Repository\InMemory([]);
+        $unitOfWork = $this->createUnitOfWork($definitions);
+        $definitions->addDefinition($this->createFakeEntityDefinition());
+
+        $entity = new EntityFake();
+        $unitOfWork->register($entity);
+        $unitOfWork->commit();
+        $this->assertTrue($this->newCommandHandler->entityWasPersisted($entity));
+
+    }
 
     /**
      * @return UnitOfWork
      */
-    private function createUnitOfWork()
+    private function createUnitOfWork(Definition\Repository $definitions = null)
     {
-        $definitions = new Definition\Repository\InMemory([$this->createFakeEntityDefinition()]);
+        $definitions = (is_null($definitions)) 
+            ? new Definition\Repository\InMemory([$this->createFakeEntityDefinition()])
+            : $definitions;
+        
         $identifier = new EntityIdentifier($definitions);
 
         return new UnitOfWork(

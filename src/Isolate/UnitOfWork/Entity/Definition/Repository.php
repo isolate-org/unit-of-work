@@ -14,6 +14,11 @@ use Isolate\UnitOfWork\Exception\RuntimeException;
 interface Repository
 {
     /**
+     * @param Definition $entityDefinition
+     */
+    public function addDefinition(Definition $entityDefinition);
+    
+    /**
      * @param $entity
      * @return boolean
      * 

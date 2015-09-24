@@ -39,6 +39,14 @@ final class InMemory implements Repository
     }
 
     /**
+     * @param Definition $entityDefinition
+     */
+    public function addDefinition(Definition $entityDefinition)
+    {
+        $this->entityDefinitions[(string) $entityDefinition->getClassName()] = $entityDefinition;
+    }
+
+    /**
      * @param $entity
      * @return bool
      * @throws InvalidArgumentException
