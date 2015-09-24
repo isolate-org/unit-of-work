@@ -32,10 +32,18 @@ final class InMemory implements Repository
                 throw new InvalidArgumentException("Each element in collection needs to be an instance of Isolate\\UnitOfWork\\Entity\\Definition");
             }
 
-            $this->entityDefinitions[(string) $definition->getClassName()] = $definition;
+            $this->addDefinition($definition);
         }
 
         $this->validateAssociations();
+    }
+
+    /**
+     * @param Definition $entityDefinition
+     */
+    public function addDefinition(Definition $entityDefinition)
+    {
+        $this->entityDefinitions[(string) $entityDefinition->getClassName()] = $entityDefinition;
     }
 
     /**
