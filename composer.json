@@ -4,7 +4,7 @@
     "keywords": ["isolate", "unit of work", "uow", "unit", "work"],
     "require": {
         "php": ">=5.4.0",
-        "myclabs/deep-copy": "1.2.*",
+        "myclabs/deep-copy": "1.5.*",
         "sebastian/comparator": "~1.0"
     },
     "require-dev": {
