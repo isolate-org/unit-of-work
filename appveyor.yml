@@ -4,19 +4,21 @@ platform: x86
 clone_folder: c:\projects\isolate\unit-of-works
 
 init:
+  - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;%PATH%
   - SET COMPOSER_NO_INTERACTION=1
     
 install:
+  - cinst -y OpenSSL.Light
   - cinst -y php
   - cd c:\tools\php
   - copy php.ini-production php.ini
   - echo date.timezone="UTC" >> php.ini
   - echo extension=php_curl.dll >> php.ini
   - echo extension_dir=ext >> php.ini
-  - SET PATH=C:\tools\php;%PATH%
+  - echo extension=php_openssl.dll >> php.ini
   - cd c:\projects\isolate\unit-of-works
   - appveyor DownloadFile https://getcomposer.org/composer.phar
-  - php composer.phar update --prefer-source --no-progress --ansi
+  - php composer.phar install --prefer-dist --no-progress --ansi
 
 test_script:
   - cd c:\projects\isolate\unit-of-works
